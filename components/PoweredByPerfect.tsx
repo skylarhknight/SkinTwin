@@ -39,7 +39,7 @@ export function PoweredByPerfect({
 
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full border border-[#dbe4f4] bg-white px-3 py-1 text-xs font-medium text-sf-ink shadow-sf-sm ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full border border-[#cbd3de] bg-[#fffefa]/95 px-3 py-1 text-xs font-medium text-sf-ink shadow-[0_7px_18px_-13px_rgba(77,99,133,.4)] ${className}`}
       title={list.map((a) => META[a].label).join(" · ")}
     >
       <Sparkle />
@@ -60,7 +60,7 @@ export function PoweredByPerfect({
 
 function Sparkle(): ReactNode {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden className="text-sf-blue-deep">
+    <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden className="text-sf-rose">
       <path
         fill="currentColor"
         d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6-5.6-1.9 5.6-1.9L12 2.5zM19 14l.95 2.55L22.5 17.5l-2.55.95L19 21l-.95-2.55L15.5 17.5l2.55-.95L19 14z"

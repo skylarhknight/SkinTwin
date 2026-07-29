@@ -22,9 +22,15 @@ export function MetricRadar({ metrics }: { metrics: SkinMetrics }) {
     <div className="h-72 w-full">
       <ResponsiveContainer>
         <RadarChart data={data} outerRadius="72%">
-          <PolarGrid />
-          <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11 }} />
-          <Radar dataKey="value" fill="currentColor" fillOpacity={0.18} stroke="currentColor" className="text-sf-blue-deep" />
+          <defs>
+            <linearGradient id="radarFill" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#6e5570" />
+              <stop offset="100%" stopColor="#d98a82" />
+            </linearGradient>
+          </defs>
+          <PolarGrid stroke="#e7ddd3" />
+          <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11, fill: "#8c8088" }} />
+          <Radar dataKey="value" fill="url(#radarFill)" fillOpacity={0.28} stroke="#6e5570" strokeWidth={2} />
         </RadarChart>
       </ResponsiveContainer>
     </div>

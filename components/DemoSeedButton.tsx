@@ -9,9 +9,9 @@ type Variant = "primary" | "secondary" | "ghost";
 
 const STYLES: Record<Variant, string> = {
   primary:
-    "inline-flex items-center gap-2 rounded-full border border-[#6d95ce] bg-sf-blue px-5 py-2.5 text-sm font-semibold text-white shadow-sf-sm transition-colors hover:bg-sf-blue-deep disabled:opacity-60",
+    "inline-flex items-center gap-2 rounded-full border border-white/40 bg-grad-cta px-5 py-2.5 text-sm font-semibold text-white shadow-sf-sm transition-transform hover:-translate-y-0.5 disabled:opacity-60",
   secondary:
-    "inline-flex items-center gap-2 rounded-full border border-[#d8e2f2] bg-white px-5 py-2.5 text-sm font-semibold text-sf-ink shadow-sm transition-colors hover:bg-sf-blue-soft disabled:opacity-60",
+    "inline-flex items-center gap-2 rounded-full border border-sf-line bg-sf-surface px-5 py-2.5 text-sm font-semibold text-sf-ink shadow-sm transition-colors hover:bg-sf-plum-soft disabled:opacity-60",
   ghost:
     "inline-flex items-center gap-2 text-sm font-medium text-sf-blue-deep underline-offset-2 hover:underline disabled:opacity-60",
 };

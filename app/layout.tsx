@@ -1,14 +1,21 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Nunito } from "next/font/google";
+import { DM_Sans, Fraunces } from "next/font/google";
 import "./globals.css";
-import { AuthGate } from "@/components/AuthGate";
-import { Nav } from "@/components/Nav";
+import { AppChrome } from "@/components/AppChrome";
 
-const nunito = Nunito({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-nunito",
+  variable: "--font-body",
   display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -18,12 +25,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={nunito.variable}>
-      <body className={nunito.className}>
-        <AuthGate>
-          <Nav />
-          <main className="mx-auto min-h-screen max-w-6xl px-4 py-8">{children}</main>
-        </AuthGate>
+    <html lang="en" className={`${dmSans.variable} ${fraunces.variable}`}>
+      <body className={dmSans.className}>
+        <AppChrome>{children}</AppChrome>
       </body>
     </html>
   );

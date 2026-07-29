@@ -49,38 +49,50 @@ export function Nav() {
   }
 
   return (
-    <header className="sticky top-0 z-20 backdrop-blur-sm">
-      <div className="mx-auto mt-3 flex max-w-6xl items-center justify-between gap-4 rounded-card border border-[#e7ecf6] bg-sf-surface/95 px-4 py-3 shadow-sf-sm">
-        <Link href="/" className="font-semibold tracking-tight text-sf-ink">
-          SkinTwin
+    <header className="sticky top-0 z-40 px-3 pt-3">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-[1.4rem] border border-[#cbd3de] bg-[#fffefa]/90 px-3 py-2.5 shadow-[0_12px_34px_-18px_rgba(77,99,133,.34)] backdrop-blur-xl">
+        <Link href="/" className="group flex items-center gap-2.5 text-sf-ink" aria-label="SkinTwin home">
+          <span className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-[0.85rem] border border-white/60 bg-grad-aurora shadow-sf-sm transition-transform group-hover:rotate-3">
+            <span className="absolute -bottom-3 -right-2 h-7 w-7 rounded-full bg-sf-plum/70" />
+            <span className="relative font-display text-base font-semibold text-white">S</span>
+          </span>
+          <span className="font-display text-[1.05rem] font-semibold tracking-[-0.02em]">SkinTwin<span className="text-sf-rose">.</span></span>
         </Link>
-        <nav className="hidden items-center gap-2 md:flex">
+        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary navigation">
           {[...primary, ...secondary].map(([label, href]) => (
             <Link
               key={href}
               href={href}
-              className="rounded-full border border-transparent bg-white px-3 py-1.5 text-sm text-sf-muted shadow-sm transition-colors hover:border-[#d9e4f3] hover:bg-sf-blue-soft hover:text-sf-ink"
+              aria-current={pathname === href || pathname?.startsWith(`${href}/`) ? "page" : undefined}
+              className={`relative rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors ${
+                pathname === href || pathname?.startsWith(`${href}/`)
+                  ? "bg-sf-yellow-soft text-sf-ink"
+                  : "text-sf-muted hover:bg-sf-blue-pale hover:text-sf-ink"
+              }`}
             >
               {label}
+              {pathname === href || pathname?.startsWith(`${href}/`) ? (
+                <span className="absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-sf-rose" />
+              ) : null}
             </Link>
           ))}
         </nav>
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 sm:flex">
           {!authResolved && onProtectedRoute ? (
-            <span className="rounded-full border border-[#d7e2f3] bg-sf-blue-soft px-4 py-2 text-sm font-semibold text-sf-ink">
-              Logged in
+            <span className="rounded-lg border border-sf-ink/30 bg-sf-blue-pale px-3 py-2 text-xs font-semibold text-sf-ink">
+              Account
             </span>
           ) : user || onProtectedRoute ? (
             <>
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#d7e2f3] bg-sf-blue-soft px-3 py-1.5 text-sm text-sf-ink">
+              <span className="hidden items-center gap-2 rounded-lg border border-sf-ink/30 bg-sf-blue-pale px-3 py-2 text-xs text-sf-ink md:inline-flex">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                Logged in
+                Online
               </span>
-              {user?.email ? <span className="max-w-[160px] truncate text-sm text-sf-muted">{user.email}</span> : null}
+              {user?.email ? <span className="hidden max-w-[120px] truncate text-xs text-sf-muted xl:inline">{user.email}</span> : null}
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="rounded-full border border-[#d7e2f3] bg-white px-4 py-2 text-sm font-medium text-sf-ink shadow-sm hover:bg-sf-blue-soft"
+                className="rounded-xl border border-[#c7d0dc] bg-white px-3 py-2 text-xs font-semibold text-sf-ink shadow-[0_5px_14px_-9px_rgba(77,99,133,.45)] transition-transform hover:-translate-y-0.5"
               >
                 Sign out
               </button>
@@ -89,29 +101,34 @@ export function Nav() {
             <>
               <Link
                 href="/login"
-                className="rounded-full border border-[#d7e2f3] bg-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-sf-blue-soft"
+                className="rounded-lg px-3 py-2 text-xs font-semibold hover:bg-sf-blue-pale"
               >
                 Log in
               </Link>
-              <Link href="/onboarding" className="rounded-full bg-sf-blue px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sf-blue-deep">
-                Start
+              <Link href="/login?next=/onboarding" className="rounded-full border border-white/40 bg-grad-cta px-4 py-2 text-xs font-semibold text-white shadow-[0_10px_22px_-12px_rgba(110,85,112,.7)] transition-transform hover:-translate-y-0.5">
+                Start scan ↗
               </Link>
             </>
           )}
         </div>
       </div>
-      <nav className="mx-auto mt-2 flex max-w-6xl gap-2 overflow-x-auto px-2 pb-3 md:hidden">
+      <nav className="mx-auto mt-2 flex max-w-6xl gap-1.5 overflow-x-auto px-1 pb-3 lg:hidden" aria-label="Mobile navigation">
         {primary.map(([label, href]) => (
-          <Link key={href} href={href} className="shrink-0 rounded-full border border-[#dce6f5] bg-white px-3 py-2 text-sm shadow-sf-sm">
+          <Link
+            key={href}
+            href={href}
+            aria-current={pathname === href ? "page" : undefined}
+            className={`shrink-0 rounded-xl border border-sf-line px-3 py-1.5 text-xs font-semibold shadow-[0_5px_14px_-10px_rgba(74,54,66,.3)] ${pathname === href ? "bg-sf-yellow" : "bg-sf-surface"}`}
+          >
             {label}
           </Link>
         ))}
         {user || onProtectedRoute ? (
-          <Link href="/settings" className="shrink-0 rounded-full bg-sf-blue px-3 py-2 text-sm font-medium text-white shadow-sf-sm">
+          <Link href="/settings" className="shrink-0 rounded-xl border border-white/40 bg-grad-cta px-3 py-1.5 text-xs font-semibold text-white shadow-[0_5px_14px_-9px_rgba(110,85,112,.5)]">
             Account
           </Link>
         ) : (
-          <Link href="/login" className="shrink-0 rounded-full bg-sf-blue px-3 py-2 text-sm font-medium text-white shadow-sf-sm">
+          <Link href="/login" className="shrink-0 rounded-xl border border-white/40 bg-grad-cta px-3 py-1.5 text-xs font-semibold text-white shadow-[0_5px_14px_-9px_rgba(110,85,112,.5)]">
             Login
           </Link>
         )}

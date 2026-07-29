@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { FluidCanvas } from "@/components/FluidCanvas";
+import { PearlCanvas } from "@/components/PearlCanvas";
 import { signIn, signUp } from "@/lib/auth/authClient";
 
 export default function LoginPage() {
@@ -35,19 +37,25 @@ export default function LoginPage() {
   }
 
   return (
+    <>
+    <PearlCanvas className="fixed inset-0 -z-10" intensity={1.1} />
     <div className="mx-auto grid max-w-5xl gap-8 py-8 md:grid-cols-[.9fr_1.1fr]">
-      <section className="rounded-card border border-white/20 bg-sf-blue p-8 text-white shadow-sf md:p-10">
-        <span className="inline-flex rounded-full bg-sf-yellow/90 px-3 py-1 text-xs font-semibold text-sf-ink shadow-sm">
-          SkinTwin account
-        </span>
-        <h1 className="mt-5 text-4xl font-semibold tracking-tight">Save your scans, habits, products, and routines.</h1>
-        <p className="mt-4 leading-7 text-white/90">
-          Sign in to keep your skincare timeline tied to your account. Protected features are only available to authenticated users.
-        </p>
-        <div className="mt-8 grid gap-3 text-sm text-white/90">
-          <p>• Persistent user profile</p>
-          <p>• Saved scan history and progress</p>
-          <p>• Product shelf and habit tracking</p>
+      <section className="relative overflow-hidden rounded-card border border-white/50 p-8 text-white shadow-sf md:p-10">
+        <FluidCanvas className="absolute inset-0" palette="plum" intensity={1.2} />
+        <div className="absolute inset-0 bg-gradient-to-br from-sf-plum/90 via-[#6e5570]/84 to-[#a06a7e]/78" aria-hidden />
+        <div className="relative">
+          <span className="inline-flex rounded-full border border-white/40 bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[.16em] backdrop-blur">
+            SkinTwin account
+          </span>
+          <h1 className="mt-5 font-display text-4xl font-medium tracking-tight">Save your scans, habits, products, and routines.</h1>
+          <p className="mt-4 leading-7 text-white/85">
+            Sign in to keep your skincare timeline tied to your account. Protected features are only available to authenticated users.
+          </p>
+          <div className="mt-8 grid gap-3 text-sm text-white/85">
+            <p>• Persistent user profile</p>
+            <p>• Saved scan history and progress</p>
+            <p>• Product shelf and habit tracking</p>
+          </div>
         </div>
       </section>
 
@@ -75,5 +83,6 @@ export default function LoginPage() {
         <p className="mt-5 text-center text-sm text-sf-muted"><Link href="/" className="underline">Back to home</Link></p>
       </section>
     </div>
+    </>
   );
 }

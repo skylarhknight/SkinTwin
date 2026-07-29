@@ -298,7 +298,7 @@ export function SkinCardDownload({ scan, fullName, futureImageUrl, className = "
         type="button"
         onClick={onClick}
         disabled={busy}
-        className="inline-flex items-center gap-2 rounded-full border border-[#d8e2f2] bg-white px-4 py-2 text-xs font-semibold text-sf-ink shadow-sm transition-colors hover:bg-sf-blue-soft disabled:opacity-60"
+        className="inline-flex items-center gap-2 rounded-full border border-sf-line bg-sf-surface px-4 py-2 text-xs font-semibold text-sf-ink shadow-sm transition-colors hover:bg-sf-plum-soft disabled:opacity-60"
       >
         {busy ? (
           <>

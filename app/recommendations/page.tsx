@@ -160,7 +160,7 @@ export default function RecommendationsPage() {
                   className={
                     c.id === category
                       ? "rounded-full bg-sf-blue px-4 py-1.5 text-xs font-semibold text-white shadow-sf-sm"
-                      : "rounded-full border border-[#dbe4f4] bg-white px-4 py-1.5 text-xs font-medium text-sf-ink shadow-sm hover:bg-sf-blue-soft"
+                      : "rounded-full border border-sf-line bg-white px-4 py-1.5 text-xs font-medium text-sf-ink shadow-sm hover:bg-sf-blue-soft"
                   }
                 >
                   {c.label}
@@ -261,7 +261,7 @@ export default function RecommendationsPage() {
                       href={buildShopUrl(r.product)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-full border border-[#dbe4f4] bg-white px-3 py-2 text-xs font-semibold text-sf-ink shadow-sm hover:bg-sf-blue-soft"
+                      className="rounded-full border border-sf-line bg-white px-3 py-2 text-xs font-semibold text-sf-ink shadow-sm hover:bg-sf-blue-soft"
                     >
                       Shop ↗
                     </a>

@@ -15,28 +15,28 @@ const scenarios: { id: SimulationScenario; title: string; tagline: string; icon:
     title: "Consistent SPF + Routine",
     tagline: "Daily SPF, AM/PM routine kept up",
     icon: "☀️",
-    tone: "from-emerald-100 to-emerald-50",
+    tone: "from-sf-sage-soft to-sf-sage/30",
   },
   {
     id: "current_trajectory",
     title: "Current Trajectory",
     tagline: "Keeps your present habit consistency",
     icon: "🧭",
-    tone: "from-sf-blue-soft to-sf-blue-pale",
+    tone: "from-sf-lilac/40 to-sf-plum-soft",
   },
   {
     id: "skip_spf",
     title: "Skip SPF",
     tagline: "No daily sun protection",
     icon: "🌞",
-    tone: "from-amber-100 to-amber-50",
+    tone: "from-sf-champagne-soft to-sf-peach/40",
   },
   {
     id: "stop_routine",
     title: "Stop Routine",
     tagline: "Skincare routine abandoned",
     icon: "💤",
-    tone: "from-rose-100 to-rose-50",
+    tone: "from-sf-rose-soft to-sf-rose/30",
   },
 ];
 
@@ -151,7 +151,7 @@ export default function FuturePage() {
                   className={`group rounded-2xl border p-4 text-left transition-shadow ${
                     active
                       ? "border-sf-blue-deep bg-sf-blue-soft shadow-sf"
-                      : "border-[#dbe4f4] bg-white shadow-sf-sm hover:shadow-sf"
+                      : "border-sf-line bg-white shadow-sf-sm hover:shadow-sf"
                   }`}
                 >
                   <div
@@ -179,7 +179,7 @@ export default function FuturePage() {
                 className={
                   y === years
                     ? "rounded-full bg-sf-blue px-4 py-1.5 text-sm font-semibold text-white shadow-sf-sm"
-                    : "rounded-full border border-[#dbe4f4] bg-white px-4 py-1.5 text-sm font-medium text-sf-ink shadow-sm hover:bg-sf-blue-soft"
+                    : "rounded-full border border-sf-line bg-white px-4 py-1.5 text-sm font-medium text-sf-ink shadow-sm hover:bg-sf-blue-soft"
                 }
               >
                 {y} years

@@ -1,6 +1,6 @@
 # SkinTwin
 
-SkinTwin is a hackathon skincare wellness app that uses AI skin analysis, habit tracking, product tracking, personalized routines, and future-aging simulations to help users understand and improve their skincare consistency.
+SkinTwin is a skincare wellness app that uses AI skin analysis, habit tracking, product tracking, personalized routines, and future-aging simulations to help users understand and improve their skincare consistency.
 
 ## Features
 

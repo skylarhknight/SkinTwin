@@ -19,6 +19,41 @@ type DashboardPayload = {
   activeRoutinePreview: { AM: string[]; PM: string[] };
 };
 
+function ScoreRing({ score }: { score: number }) {
+  const r = 42;
+  const c = 2 * Math.PI * r;
+  const pct = Math.max(0, Math.min(100, score));
+  return (
+    <div className="relative grid h-24 w-24 place-items-center">
+      <svg viewBox="0 0 100 100" className="h-24 w-24 -rotate-90">
+        <defs>
+          <linearGradient id="scoreGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#6e5570" />
+            <stop offset="55%" stopColor="#a06a7e" />
+            <stop offset="100%" stopColor="#d98a82" />
+          </linearGradient>
+        </defs>
+        <circle cx="50" cy="50" r={r} fill="none" stroke="#ede4ee" strokeWidth="8" />
+        <circle
+          cx="50"
+          cy="50"
+          r={r}
+          fill="none"
+          stroke="url(#scoreGrad)"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - pct / 100)}
+        />
+      </svg>
+      <div className="absolute flex flex-col items-center">
+        <span className="text-[9px] font-semibold uppercase tracking-wide text-sf-muted">Score</span>
+        <span className="font-display text-2xl font-medium text-sf-plum">{score}</span>
+      </div>
+    </div>
+  );
+}
+
 function timeOfDayGreeting(): string {
   if (typeof window === "undefined") return "Welcome back";
   const h = new Date().getHours();
@@ -115,16 +150,14 @@ export default function DashboardPage() {
         <DataModeBadge />
       </div>
 
-      <section className="rounded-card border border-[#dde6f5] bg-gradient-to-br from-sf-blue-pale via-white to-sf-yellow-soft p-6 shadow-sf-sm">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-sf-blue-deep">Your skin today</p>
+      <section className="relative overflow-hidden rounded-card border border-white/50 bg-sf-surface p-6 shadow-sf-sm">
+        <div className="absolute inset-0 bg-gradient-to-br from-sf-lilac/25 via-sf-surface/60 to-sf-champagne-soft/50" aria-hidden />
+        <div className="relative flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[.14em] text-sf-plum">Your skin today</p>
           <PoweredByPerfect apis={tone ? ["skin-analysis", "facial-tone"] : "skin-analysis"} />
         </div>
-        <div className="mt-3 grid gap-5 md:grid-cols-[auto_1fr_auto]">
-          <div className="flex h-24 w-24 flex-col items-center justify-center rounded-3xl bg-white shadow-sf-sm ring-1 ring-sf-blue-lighter/40">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-sf-muted">Score</p>
-            <p className="text-3xl font-bold text-sf-blue-deep">{scan.overallScore}</p>
-          </div>
+        <div className="relative mt-3 grid gap-5 md:grid-cols-[auto_1fr_auto]">
+          <ScoreRing score={scan.overallScore} />
           <div className="flex flex-col justify-center">
             <p className="text-base text-sf-ink">{topConcernCopy(scan)}</p>
             {tone ? (
