@@ -10,7 +10,7 @@ import { AuroraCanvas } from "@/components/AuroraCanvas";
 /** Routes that render full-bleed, without the SkinTwin nav / ambient / shell chrome. */
 const BARE_PREFIXES = ["/archive"];
 /** Exact routes that render full-bleed (prefix match would over-capture, e.g. "/"). */
-const BARE_EXACT = ["/"];
+const BARE_EXACT = ["/", "/login"];
 
 export function AppChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();

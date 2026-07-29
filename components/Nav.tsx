@@ -50,7 +50,7 @@ export function Nav() {
 
   return (
     <header className="sticky top-0 z-40 px-3 pt-3">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-[1.4rem] border border-[#cbd3de] bg-[#fffefa]/90 px-3 py-2.5 shadow-[0_12px_34px_-18px_rgba(77,99,133,.34)] backdrop-blur-xl">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-[1.4rem] border border-white/60 bg-sf-surface/85 px-3 py-2.5 shadow-[0_18px_40px_-24px_rgba(74,54,66,.4)] backdrop-blur-xl">
         <Link href="/" className="group flex items-center gap-2.5 text-sf-ink" aria-label="SkinTwin home">
           <span className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-[0.85rem] border border-white/60 bg-grad-aurora shadow-sf-sm transition-transform group-hover:rotate-3">
             <span className="absolute -bottom-3 -right-2 h-7 w-7 rounded-full bg-sf-plum/70" />
@@ -64,10 +64,10 @@ export function Nav() {
               key={href}
               href={href}
               aria-current={pathname === href || pathname?.startsWith(`${href}/`) ? "page" : undefined}
-              className={`relative rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors ${
+              className={`relative rounded-full px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors ${
                 pathname === href || pathname?.startsWith(`${href}/`)
-                  ? "bg-sf-yellow-soft text-sf-ink"
-                  : "text-sf-muted hover:bg-sf-blue-pale hover:text-sf-ink"
+                  ? "bg-sf-champagne-soft text-sf-ink"
+                  : "text-sf-muted hover:bg-sf-plum-soft hover:text-sf-ink"
               }`}
             >
               {label}
@@ -92,7 +92,7 @@ export function Nav() {
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="rounded-xl border border-[#c7d0dc] bg-white px-3 py-2 text-xs font-semibold text-sf-ink shadow-[0_5px_14px_-9px_rgba(77,99,133,.45)] transition-transform hover:-translate-y-0.5"
+                className="rounded-full border border-sf-line bg-sf-surface px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-sf-ink shadow-[0_5px_14px_-9px_rgba(74,54,66,.45)] transition-transform hover:-translate-y-0.5"
               >
                 Sign out
               </button>

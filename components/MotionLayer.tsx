@@ -9,18 +9,30 @@ export function MotionLayer() {
   useEffect(() => {
     const root = document.documentElement;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const revealNodes = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+
+    const reveal = (node: HTMLElement) => node.classList.add("is-visible");
 
     if (reduceMotion) {
-      revealNodes.forEach((node) => node.classList.add("is-visible"));
-      return;
+      // Reveal everything now, and anything mounted later (async content), immediately.
+      document.querySelectorAll<HTMLElement>("[data-reveal]").forEach(reveal);
+      const mo = new MutationObserver((records) => {
+        records.forEach((rec) =>
+          rec.addedNodes.forEach((n) => {
+            if (!(n instanceof HTMLElement)) return;
+            if (n.matches("[data-reveal]")) reveal(n);
+            n.querySelectorAll<HTMLElement>("[data-reveal]").forEach(reveal);
+          })
+        );
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+      return () => mo.disconnect();
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            (entry.target as HTMLElement).classList.add("is-visible");
+            reveal(entry.target as HTMLElement);
             observer.unobserve(entry.target);
           }
         });
@@ -28,10 +40,34 @@ export function MotionLayer() {
       { threshold: 0.12, rootMargin: "0px 0px -7%" }
     );
 
-    revealNodes.forEach((node, index) => {
-      node.style.setProperty("--reveal-delay", `${Math.min(index % 4, 3) * 90}ms`);
-      observer.observe(node);
+    // Register a reveal node. `seq` staggers the entrance delay; nodes that mount
+    // later (after an async fetch) register the same way, so content never sticks at opacity:0.
+    // Anything already in view reveals immediately — observing an in-viewport node in the same
+    // frame it mounts can yield an initial isIntersecting:false that never re-fires without a
+    // scroll, leaving it stuck. Only below-fold nodes are deferred to the observer.
+    let seq = 0;
+    const register = (node: HTMLElement) => {
+      if (node.dataset.revealBound) return;
+      node.dataset.revealBound = "1";
+      node.style.setProperty("--reveal-delay", `${Math.min(seq % 4, 3) * 90}ms`);
+      seq += 1;
+      if (node.getBoundingClientRect().top < window.innerHeight * 0.95) reveal(node);
+      else observer.observe(node);
+    };
+
+    document.querySelectorAll<HTMLElement>("[data-reveal]").forEach(register);
+
+    // Catch data-reveal content that renders after data loads.
+    const mutations = new MutationObserver((records) => {
+      records.forEach((rec) =>
+        rec.addedNodes.forEach((n) => {
+          if (!(n instanceof HTMLElement)) return;
+          if (n.matches("[data-reveal]")) register(n);
+          n.querySelectorAll<HTMLElement>("[data-reveal]").forEach(register);
+        })
+      );
     });
+    mutations.observe(document.body, { childList: true, subtree: true });
 
     let frame = 0;
     const updateScroll = () => {
@@ -56,6 +92,7 @@ export function MotionLayer() {
 
     return () => {
       observer.disconnect();
+      mutations.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       if (frame) window.cancelAnimationFrame(frame);

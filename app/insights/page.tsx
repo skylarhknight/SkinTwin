@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { DataModeBadge } from "@/components/DataModeBadge";
 import { Disclaimer } from "@/components/Disclaimer";
+import { PageHeader } from "@/components/PageHeader";
 import { PoweredByPerfect } from "@/components/PoweredByPerfect";
 import { getAccessToken } from "@/lib/auth/authClient";
 import type { Insight } from "@/lib/types";
@@ -34,20 +35,16 @@ export default function InsightsPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="badge">Pattern detection</span>
-            <PoweredByPerfect apis="skin-analysis" variant="chip" />
-          </div>
-          <h1 className="mt-3 text-3xl font-semibold">Your Skin Patterns</h1>
-          <p className="mt-2 max-w-2xl text-sm text-sf-muted">
-            Insights connect your habit logs and product changes to changes in your scan scores. The more days you log, the more confident the patterns get.
-          </p>
-        </div>
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="Pattern detection"
+        title={<>Your skin <span className="italic">patterns</span></>}
+        intro="Insights connect your habit logs and product changes to shifts in your scan scores. The more days you log, the more confident the patterns get."
+        accent="rose"
+      >
+        <PoweredByPerfect apis="skin-analysis" variant="chip" />
         <DataModeBadge />
-      </div>
+      </PageHeader>
 
       {status === "loading" ? (
         <section className="grid gap-4">

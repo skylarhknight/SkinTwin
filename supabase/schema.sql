@@ -167,6 +167,26 @@ begin
   end if;
 end $$;
 
+-- persistInsights() upserts on this key so regenerating a snapshot keeps stable
+-- ids and created_at instead of churning rows on every page load.
+delete from public.insights i
+using public.insights keep
+where i.user_id = keep.user_id
+  and i.insight_type = keep.insight_type
+  and i.title = keep.title
+  and i.ctid <> keep.ctid
+  and (keep.created_at, keep.ctid) > (i.created_at, i.ctid);
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'insights_user_type_title_key'
+  ) then
+    alter table public.insights
+      add constraint insights_user_type_title_key unique (user_id, insight_type, title);
+  end if;
+end $$;
+
 -- ---------------------------------------------------------------------------
 -- Indexes (mirror the filters/orders used by app/api/*)
 -- ---------------------------------------------------------------------------
@@ -289,6 +309,38 @@ create policy "skin-scans own folder delete" on storage.objects
   for delete to authenticated
   using (
     bucket_id = 'skin-scans'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- ---------------------------------------------------------------------------
+-- Storage: simulation results (SIMULATION_BUCKET in lib/supabase/simulationStore.ts)
+--
+-- Perfect returns a short-lived signed URL for a finished simulation, so the
+-- result is mirrored here before the simulations row is written.
+-- ---------------------------------------------------------------------------
+
+insert into storage.buckets (id, name, public)
+values ('simulations', 'simulations', true)
+on conflict (id) do update set public = true;
+
+drop policy if exists "simulations public read" on storage.objects;
+create policy "simulations public read" on storage.objects
+  for select to public
+  using (bucket_id = 'simulations');
+
+drop policy if exists "simulations own folder write" on storage.objects;
+create policy "simulations own folder write" on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'simulations'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+drop policy if exists "simulations own folder delete" on storage.objects;
+create policy "simulations own folder delete" on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'simulations'
     and (storage.foldername(name))[1] = auth.uid()::text
   );
 

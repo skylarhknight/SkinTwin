@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { getRequestUserId } from "@/lib/auth/serverAuth";
+import { getRequestUser } from "@/lib/auth/serverAuth";
 import { generateInsights } from "@/lib/insights/insightEngine";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { ensureAppUser } from "@/lib/supabase/ensureAppUser";
+import { persistInsights } from "@/lib/supabase/insightStore";
 import { dbSkinScanToScanResponse, type SkinScansRow } from "@/lib/supabase/scanMapper";
 import type { DailyHabit, Product, UserProfile } from "@/lib/types";
 
@@ -44,8 +46,9 @@ function mapProfileRow(row: Record<string, unknown>): UserProfile {
 }
 
 export async function GET(request: Request) {
-  const userId = await getRequestUserId(request);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await getRequestUser(request);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = user.id;
   const supabase = getSupabaseAdminClient();
   if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 500 });
 
@@ -56,11 +59,23 @@ export async function GET(request: Request) {
     supabase.from("user_profiles").select("*").eq("user_id", userId).maybeSingle(),
   ]);
 
+  const mappedScans = (scans ?? []).map((s) => dbSkinScanToScanResponse(s as SkinScansRow));
+
   const insights = generateInsights({
-    scans: (scans ?? []).map((s) => dbSkinScanToScanResponse(s as SkinScansRow)),
+    scans: mappedScans,
     habits: (habits ?? []).map((h) => mapHabitRow(h as Record<string, unknown>)),
     products: (products ?? []).map((p) => mapProductRow(p as Record<string, unknown>)),
     profile: profile ? mapProfileRow(profile as Record<string, unknown>) : undefined,
   });
-  return NextResponse.json({ insights });
+
+  /**
+   * Insights are derived deterministically from the data above, so the snapshot
+   * is refreshed on every read. Persisting it keeps stable ids for the UI and
+   * gives other surfaces (and future notifications) something to query.
+   */
+  const ensured = await ensureAppUser(supabase, user);
+  if (!ensured) return NextResponse.json({ insights });
+
+  const persisted = await persistInsights(supabase, userId, insights, mappedScans.at(-1)?.id ?? null);
+  return NextResponse.json({ insights: persisted });
 }

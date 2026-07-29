@@ -39,7 +39,7 @@ export function PoweredByPerfect({
 
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full border border-[#cbd3de] bg-[#fffefa]/95 px-3 py-1 text-xs font-medium text-sf-ink shadow-[0_7px_18px_-13px_rgba(77,99,133,.4)] ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full border border-white/60 bg-sf-surface/90 px-3 py-1 text-xs font-medium text-sf-ink shadow-[0_7px_18px_-13px_rgba(74,54,66,.4)] backdrop-blur ${className}`}
       title={list.map((a) => META[a].label).join(" · ")}
     >
       <Sparkle />

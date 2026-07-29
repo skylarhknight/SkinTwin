@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DemoSeedButton } from "@/components/DemoSeedButton";
+import { PageHeader } from "@/components/PageHeader";
 import { PoweredByPerfect } from "@/components/PoweredByPerfect";
 import { getAccessToken, getCurrentUser } from "@/lib/auth/authClient";
 import { LS_KEYS } from "@/lib/storage/localStorageKeys";
@@ -307,23 +308,19 @@ export default function ScanPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
-          <span className="badge">Daily scan</span>
-          <h1 className="mt-3 text-3xl font-semibold">Take your daily skin scan</h1>
-          <p className="mt-2 text-sf-muted">Take a live selfie or upload a clear face photo to generate a skin report.</p>
-          <p className="mt-2 text-sm text-sf-muted">
-            For best results: face the camera, move close enough that your face fills the oval, and capture at least ~480px on the short side. Very small or distant photos may be rejected by the analysis API.
-          </p>
-        </div>
+    <div className="mx-auto max-w-4xl space-y-8">
+      <PageHeader
+        eyebrow="Daily scan"
+        title={<>Take your daily skin <span className="italic">scan</span></>}
+        intro="A live selfie or a clear face photo becomes your skin report. Fill the oval, keep ~480px on the short side — very small or distant photos may be rejected."
+      >
         <div className="flex flex-col items-start gap-2 md:items-end">
           <PoweredByPerfect apis={["skin-analysis", "facial-tone"]} className="shrink-0" />
           <DemoSeedButton label="No camera? Try demo data" variant="ghost" redirectTo="/dashboard" />
         </div>
-      </div>
+      </PageHeader>
 
-      <div className="grid gap-6 md:grid-cols-[1fr_.8fr]">
+      <div data-reveal className="grid gap-6 md:grid-cols-[1fr_.8fr]">
         <section className="card space-y-4">
           <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-3xl bg-sf-blue-soft">
             {cameraOn ? (

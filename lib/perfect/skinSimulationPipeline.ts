@@ -1,11 +1,8 @@
 import type { SimulationScenario } from "@/lib/types";
 import { timeoutSignal } from "@/lib/fetchUtil";
+import { normalizePerfectBaseUrl } from "@/lib/perfect/baseUrl";
 
 const FETCH_TIMEOUT_MS = 45_000;
-
-function normalizeBaseUrl(url: string): string {
-  return url.replace(/\/+$/, "");
-}
 
 function parseBody(json: unknown): { ok: boolean; data?: Record<string, unknown>; message?: string } {
   if (!json || typeof json !== "object") return { ok: false, message: "invalid json" };
@@ -168,7 +165,7 @@ export async function runPerfectSkinSimulationPipeline(
   contentType: string,
   scenario: SimulationScenario
 ): Promise<SkinSimulationPipelineResult> {
-  const baseUrl = normalizeBaseUrl(process.env.PERFECT_API_BASE_URL ?? "");
+  const baseUrl = normalizePerfectBaseUrl(process.env.PERFECT_API_BASE_URL ?? "");
   const apiKey = process.env.PERFECT_API_KEY ?? "";
   const taskPath =
     process.env.PERFECT_SKIN_SIMULATION_TASK_ENDPOINT?.trim() ||

@@ -30,8 +30,8 @@ export function DataModeBadge() {
   const ui = useMemo(() => {
     if (mode === "live") return { label: "Live data", cls: "bg-emerald-50 text-emerald-700 ring-emerald-200" };
     if (mode === "demo") return { label: "Demo data", cls: "bg-amber-50 text-amber-700 ring-amber-200" };
-    if (mode === "mixed") return { label: "Mixed data", cls: "bg-sky-50 text-sky-700 ring-sky-200" };
-    return { label: "No data yet", cls: "bg-slate-50 text-slate-600 ring-slate-200" };
+    if (mode === "mixed") return { label: "Mixed data", cls: "bg-sf-plum-soft text-sf-plum ring-sf-lilac/50" };
+    return { label: "No data yet", cls: "bg-sf-champagne-soft text-sf-ink ring-sf-champagne/40" };
   }, [mode]);
 
   return <span className={`badge ring-1 ${ui.cls}`}>{ui.label}</span>;

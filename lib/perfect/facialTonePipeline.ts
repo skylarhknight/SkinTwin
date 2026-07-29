@@ -1,11 +1,8 @@
 import { timeoutSignal } from "@/lib/fetchUtil";
 import type { FacialToneData } from "@/lib/types";
+import { normalizePerfectBaseUrl } from "@/lib/perfect/baseUrl";
 
 const FETCH_TIMEOUT_MS = 45_000;
-
-function normalizeBaseUrl(url: string): string {
-  return url.replace(/\/+$/, "");
-}
 
 function parseBody(json: unknown): { ok: boolean; data?: Record<string, unknown>; message?: string } {
   if (!json || typeof json !== "object") return { ok: false, message: "invalid json" };
@@ -97,7 +94,7 @@ export async function runPerfectFacialTonePipeline(
   filename: string,
   contentType: string
 ): Promise<PerfectFacialTonePipelineResult> {
-  const baseUrl = normalizeBaseUrl(process.env.PERFECT_API_BASE_URL ?? "");
+  const baseUrl = normalizePerfectBaseUrl(process.env.PERFECT_API_BASE_URL ?? "");
   const apiKey = process.env.PERFECT_API_KEY ?? "";
   const taskPath = process.env.PERFECT_FACIAL_TONE_ENDPOINT?.trim() ?? "";
   const filePath = process.env.PERFECT_FACIAL_TONE_FILE_ENDPOINT?.trim() || deriveFileEndpoint(taskPath);

@@ -37,9 +37,17 @@ export default function LoginPage() {
   }
 
   return (
-    <>
-    <PearlCanvas className="fixed inset-0 -z-10" intensity={1.1} />
-    <div className="mx-auto grid max-w-5xl gap-8 py-8 md:grid-cols-[.9fr_1.1fr]">
+    <div className="relative min-h-screen w-full overflow-hidden">
+      {/* pearl liquid-glass background — interactive, grained, full-bleed */}
+      <PearlCanvas className="absolute inset-0" intensity={1.1} />
+
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-5xl items-center px-5 py-10 md:px-8">
+        <Link href="/" className="absolute left-5 top-6 flex items-center gap-2 md:left-8">
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-grad-cta text-sm font-semibold text-white shadow-sf-sm">S</span>
+          <span className="font-display text-lg font-medium tracking-tight">SkinTwin<span className="text-sf-rose">.</span></span>
+        </Link>
+
+        <div className="grid w-full gap-8 md:grid-cols-[.9fr_1.1fr]">
       <section className="relative overflow-hidden rounded-card border border-white/50 p-8 text-white shadow-sf md:p-10">
         <FluidCanvas className="absolute inset-0" palette="plum" intensity={1.2} />
         <div className="absolute inset-0 bg-gradient-to-br from-sf-plum/90 via-[#6e5570]/84 to-[#a06a7e]/78" aria-hidden />
@@ -82,7 +90,8 @@ export default function LoginPage() {
         </form>
         <p className="mt-5 text-center text-sm text-sf-muted"><Link href="/" className="underline">Back to home</Link></p>
       </section>
+        </div>
+      </div>
     </div>
-    </>
   );
 }

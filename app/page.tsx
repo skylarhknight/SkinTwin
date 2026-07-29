@@ -194,18 +194,15 @@ function LogoMark({ light }: { light: boolean }) {
 function VideoScrubHero({ ctaHref, ctaLabel, authed }: { ctaHref: string; ctaLabel: string; authed: boolean }) {
   const heroRef = useRef<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [ready, setReady] = useState(false);
 
-  // prime a decoded frame, then park at 0 for scrubbing
+  // prime a decoded frame, then park at 0 for scrubbing. The <video> renders at full
+  // opacity over a matching backdrop, so there's no reveal gate to get stuck — whatever
+  // has decoded simply shows.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     v.muted = true;
     (v as HTMLVideoElement & { playsInline: boolean }).playsInline = true;
-
-    // Reveal synchronously: the <video> sits over a matching backdrop, so it's safe to
-    // show immediately and let the first frame decode in place.
-    setReady(true);
 
     const prime = () => {
       // pull the decoder awake, then park at frame 0 for scrubbing
@@ -241,7 +238,7 @@ function VideoScrubHero({ ctaHref, ctaLabel, authed }: { ctaHref: string; ctaLab
       window.removeEventListener("scroll", onScroll);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [ready]);
+  }, []);
 
   return (
     <section ref={heroRef} className="relative h-[240vh]">
@@ -252,8 +249,7 @@ function VideoScrubHero({ ctaHref, ctaLabel, authed }: { ctaHref: string; ctaLab
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
-          style={{ opacity: ready ? 1 : 0 }}
+          className="absolute inset-0 h-full w-full object-cover"
         />
         {/* gentle pastel wash so overlay text and the pink-glow edges feel cohesive */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-[#e9cbd0]/30" aria-hidden />
@@ -300,8 +296,9 @@ function VideoScrubHero({ ctaHref, ctaLabel, authed }: { ctaHref: string; ctaLab
 function HomeFooter() {
   return (
     <footer className="relative overflow-hidden border-t border-white/60">
-      <PearlCanvas className="absolute inset-0" intensity={1} />
-      <div className="absolute inset-0 bg-white/25" aria-hidden />
+      <PearlCanvas className="absolute inset-0" intensity={1.15} />
+      {/* faint scrim only under the text column for legibility — keeps the pearl visible */}
+      <div className="absolute inset-0 bg-gradient-to-t from-white/25 to-transparent" aria-hidden />
       <div className="relative mx-auto flex max-w-6xl flex-col gap-8 px-5 py-14 md:flex-row md:items-end md:justify-between md:px-8">
         <div>
           <div className="flex items-center gap-2.5">

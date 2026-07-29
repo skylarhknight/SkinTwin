@@ -1,14 +1,11 @@
 import type { SkinMetrics } from "@/lib/types";
 import { PerfectSkinAnalysisRejectedError } from "@/lib/perfect/perfectSkinErrors";
 import { neutralBaselineMetrics } from "@/lib/skin/skinScore";
+import { normalizePerfectBaseUrl } from "@/lib/perfect/baseUrl";
 
 function clampScore(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.max(0, Math.min(100, Math.round(value)));
-}
-
-function normalizeBaseUrl(url: string): string {
-  return url.replace(/\/+$/, "");
 }
 
 /** Map Perfect `output[].type` strings to app SkinMetrics keys (SD task actions). */
@@ -146,14 +143,13 @@ export async function runPerfectSkinAnalysisPipeline(
   filename: string,
   contentType: string
 ): Promise<PerfectSkinPipelineResult> {
-  const baseUrl = normalizeBaseUrl(process.env.PERFECT_API_BASE_URL ?? "");
+  const baseUrl = normalizePerfectBaseUrl(process.env.PERFECT_API_BASE_URL ?? "");
   const apiKey = process.env.PERFECT_API_KEY ?? "";
-  const taskPath = process.env.PERFECT_SKIN_ANALYSIS_ENDPOINT ?? "";
-  const filePath =
-    process.env.PERFECT_SKIN_FILE_ENDPOINT?.trim() || (taskPath ? deriveFileEndpoint(taskPath) : "/s2s/v2.1/file/skin-analysis");
+  const taskPath = process.env.PERFECT_SKIN_ANALYSIS_ENDPOINT?.trim() || "/s2s/v2.1/task/skin-analysis";
+  const filePath = process.env.PERFECT_SKIN_FILE_ENDPOINT?.trim() || deriveFileEndpoint(taskPath);
 
-  if (!baseUrl || !apiKey || !taskPath) {
-    throw new Error("PERFECT_API_BASE_URL, PERFECT_API_KEY, and PERFECT_SKIN_ANALYSIS_ENDPOINT are required");
+  if (!baseUrl || !apiKey) {
+    throw new Error("PERFECT_API_BASE_URL and PERFECT_API_KEY are required for skin analysis.");
   }
 
   const byteLength = imageBuffer.byteLength;

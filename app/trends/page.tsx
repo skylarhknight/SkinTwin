@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { DataModeBadge } from "@/components/DataModeBadge";
 import { EmptyState } from "@/components/EmptyState";
+import { PageHeader } from "@/components/PageHeader";
 import { PoweredByPerfect } from "@/components/PoweredByPerfect";
 import { MetricRadar } from "@/components/charts/MetricRadar";
 import { TrendLine } from "@/components/charts/TrendLine";
@@ -36,26 +37,23 @@ export default function TrendsPage() {
   const hasSeries = (data?.series?.[metric] ?? []).length > 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 md:flex-row">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="badge">Analytics</span>
-            <PoweredByPerfect apis="skin-analysis" />
-          </div>
-          <h1 className="mt-3 text-3xl font-semibold">Skin Trends</h1>
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="Analytics · Study N°030"
+        title={<>Skin <span className="italic">trends</span></>}
+        intro="Watch each metric drift over time and read the shifts between scans."
+        accent="rose"
+      >
+        <PoweredByPerfect apis="skin-analysis" />
+        <DataModeBadge />
+        <div className="flex gap-2">
+          {["7d", "30d", "90d"].map((r) => (
+            <button key={r} className={r === range ? "btn-primary" : "btn-secondary"} onClick={() => setRange(r)}>
+              {r}
+            </button>
+          ))}
         </div>
-        <div className="flex items-center gap-3">
-          <DataModeBadge />
-          <div className="flex gap-2">
-            {["7d", "30d", "90d"].map((r) => (
-              <button key={r} className={r === range ? "btn-primary" : "btn-secondary"} onClick={() => setRange(r)}>
-                {r}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      </PageHeader>
 
       {!hasSeries ? (
         <EmptyState
@@ -66,7 +64,7 @@ export default function TrendsPage() {
         />
       ) : (
         <>
-          <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
+          <div data-reveal className="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
             <section className="card">
               <div className="flex flex-wrap gap-2">
                 {metrics.map((m) => (
@@ -91,7 +89,7 @@ export default function TrendsPage() {
               )}
             </section>
           </div>
-          <section className="grid gap-4 md:grid-cols-3">
+          <section data-reveal className="grid gap-4 md:grid-cols-3">
             {(data?.callouts ?? []).map((c) => (
               <div className="card" key={c}>
                 <p className="text-sm text-sf-ink">{c}</p>

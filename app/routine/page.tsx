@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Disclaimer } from "@/components/Disclaimer";
 import { EmptyState } from "@/components/EmptyState";
+import { PageHeader } from "@/components/PageHeader";
 import { getAccessToken } from "@/lib/auth/authClient";
 import { LS_KEYS } from "@/lib/storage/localStorageKeys";
 import type { RoutineResponse } from "@/lib/types";
@@ -35,14 +36,13 @@ export default function RoutinePage() {
 
   if (status === "loading") {
     return (
-      <div className="space-y-6">
-        <div>
-          <span className="badge">Personalized plan</span>
-          <h1 className="mt-3 text-3xl font-semibold">Your AM/PM Routine</h1>
-          <p className="mt-2 text-sf-muted">
-            Generating a routine from your scan, products, and habits…
-          </p>
-        </div>
+      <div className="space-y-8">
+        <PageHeader
+          eyebrow="Personalized plan"
+          title={<>Your AM / PM <span className="italic">routine</span></>}
+          intro="Generating a routine from your scan, products, and habits…"
+          accent="sage"
+        />
         <div className="grid gap-6 md:grid-cols-2">
           {["AM", "PM"].map((slot) => (
             <section className="card animate-pulse space-y-4" key={slot}>
@@ -83,12 +83,14 @@ export default function RoutinePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <span className="badge">Personalized plan</span>
-        <h1 className="mt-3 text-3xl font-semibold">Your AM/PM Routine</h1>
-      </div>
-      <div className="grid gap-6 md:grid-cols-2">
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="Personalized plan"
+        title={<>Your AM / PM <span className="italic">routine</span></>}
+        intro="Sequenced from your scan, products, and logged habits — each step with the why."
+        accent="sage"
+      />
+      <div data-reveal className="grid gap-6 md:grid-cols-2">
         {routine.routines.map((r) => (
           <section className="card" key={r.routineType}>
             <h2 className="text-xl font-semibold">{r.routineType} Routine</h2>

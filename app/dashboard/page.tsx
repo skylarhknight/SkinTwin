@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { DataModeBadge } from "@/components/DataModeBadge";
 import { DemoSeedButton } from "@/components/DemoSeedButton";
+import { PageHeader } from "@/components/PageHeader";
 import { PoweredByPerfect } from "@/components/PoweredByPerfect";
 import { SkinCardDownload } from "@/components/SkinCardDownload";
 import { LS_KEYS } from "@/lib/storage/localStorageKeys";
@@ -110,14 +111,13 @@ export default function DashboardPage() {
 
   if (!data?.latestScan)
     return (
-      <div className="space-y-6">
-        <div>
-          <span className="badge">Dashboard</span>
-          <h1 className="mt-3 text-3xl font-semibold">
-            {greeting}{user?.fullName ? `, ${user.fullName.split(" ")[0]}` : ""}.
-          </h1>
-        </div>
-        <div className="card text-center">
+      <div className="space-y-8">
+        <PageHeader
+          eyebrow="Daily briefing"
+          title={<>{greeting}{user?.fullName ? <>, <span className="gradient-text">{user.fullName.split(" ")[0]}</span></> : ""}.</>}
+          intro="Your SkinTwin is waiting on its first read. Take a scan or explore with demo data."
+        />
+        <div data-reveal className="card text-center">
           <h2 className="text-xl font-semibold">Your dashboard is ready for a scan</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-sf-muted">
             Take a 30-second selfie scan to unlock your SkinTwin score, trends, personalized routine, and a 20-year future simulation. No camera handy? Seed your account with realistic demo data and explore everything end-to-end.
@@ -136,21 +136,16 @@ export default function DashboardPage() {
   const tone = scan.facialToneData;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <span className="badge">Dashboard</span>
-          <h1 className="mt-3 text-3xl font-semibold">
-            {greeting}{user?.fullName ? `, ${user.fullName.split(" ")[0]}` : ""}.
-          </h1>
-          <p className="mt-1 text-sm text-sf-muted">
-            Last scan {new Date(scan.scanDate).toLocaleDateString()} · {scan.isMock ? "demo data" : "live analysis"}
-          </p>
-        </div>
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="Daily briefing"
+        title={<>{greeting}{user?.fullName ? <>, <span className="gradient-text">{user.fullName.split(" ")[0]}</span></> : ""}.</>}
+        intro={`Last scan ${new Date(scan.scanDate).toLocaleDateString()} · ${scan.isMock ? "demo data" : "live analysis"}`}
+      >
         <DataModeBadge />
-      </div>
+      </PageHeader>
 
-      <section className="relative overflow-hidden rounded-card border border-white/50 bg-sf-surface p-6 shadow-sf-sm">
+      <section data-reveal className="relative overflow-hidden rounded-card border border-white/50 bg-sf-surface p-6 shadow-sf-sm">
         <div className="absolute inset-0 bg-gradient-to-br from-sf-lilac/25 via-sf-surface/60 to-sf-champagne-soft/50" aria-hidden />
         <div className="relative flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-semibold uppercase tracking-[.14em] text-sf-plum">Your skin today</p>
@@ -182,7 +177,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section data-reveal className="grid gap-4 md:grid-cols-3">
         {[
           ["SPF streak", `${data.streaks.spf} day${data.streaks.spf === 1 ? "" : "s"}`],
           ["Routine streak", `${data.streaks.routine} day${data.streaks.routine === 1 ? "" : "s"}`],
@@ -195,7 +190,7 @@ export default function DashboardPage() {
         ))}
       </section>
 
-      <section className="grid gap-6 md:grid-cols-2">
+      <section data-reveal className="grid gap-6 md:grid-cols-2">
         <div className="card">
           <h2 className="font-semibold">Top insight</h2>
           <p className="mt-2 text-sf-muted">
@@ -218,10 +213,10 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="card">
+      <section data-reveal className="card">
         <h2 className="font-semibold">Routine preview</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <div className="rounded-2xl bg-sf-blue-soft p-4">
+          <div className="rounded-2xl border border-sf-line/70 bg-gradient-to-br from-sf-champagne-soft/70 to-sf-surface p-4">
             <p className="font-medium">AM</p>
             <p className="text-sm text-sf-muted">
               {data.activeRoutinePreview.AM.length
@@ -229,7 +224,7 @@ export default function DashboardPage() {
                 : "No AM routine generated yet."}
             </p>
           </div>
-          <div className="rounded-2xl bg-sf-blue-soft p-4">
+          <div className="rounded-2xl border border-sf-line/70 bg-gradient-to-br from-sf-plum-soft/70 to-sf-surface p-4">
             <p className="font-medium">PM</p>
             <p className="text-sm text-sf-muted">
               {data.activeRoutinePreview.PM.length

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { BeforeAfterSlider } from "@/components/BeforeAfterSlider";
 import { DataModeBadge } from "@/components/DataModeBadge";
 import { Disclaimer } from "@/components/Disclaimer";
+import { PageHeader } from "@/components/PageHeader";
 import { PoweredByPerfect } from "@/components/PoweredByPerfect";
 import { getAccessToken } from "@/lib/auth/authClient";
 import { LS_KEYS } from "@/lib/storage/localStorageKeys";
@@ -122,22 +123,18 @@ export default function FuturePage() {
   const source = latestImage || scan?.imageUrl || "/mock/skin-scan-placeholder.svg";
 
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="badge">Future simulation</span>
-          <div className="flex items-center gap-2">
-            <PoweredByPerfect apis="skin-simulation" />
-            <DataModeBadge />
-          </div>
-        </div>
-        <h1 className="mt-3 text-3xl font-semibold">See Your Skin Future</h1>
-        <p className="mt-2 max-w-2xl text-sf-muted">
-          A {years}-year illustrative simulation of your face under four different lifestyle scenarios. Drag the slider to compare today vs your future self.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="Future simulation"
+        title={<>See your skin <span className="italic">future</span></>}
+        intro={`A ${years}-year illustrative simulation of your face under four lifestyle scenarios. Drag the slider to compare today vs your future self.`}
+        accent="plum"
+      >
+        <PoweredByPerfect apis="skin-simulation" />
+        <DataModeBadge />
+      </PageHeader>
 
-      <section className="card space-y-5">
+      <section data-reveal className="card space-y-5">
         <div>
           <p className="text-sm font-semibold text-sf-ink">1. Pick a scenario</p>
           <div className="mt-3 grid gap-3 md:grid-cols-4">
@@ -206,7 +203,7 @@ export default function FuturePage() {
         {genError ? <p className="text-sm text-red-600">{genError}</p> : null}
       </section>
 
-      <section className="card">
+      <section data-reveal className="card">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-semibold">Compare today vs future</h2>
           {sim?.isMock ? <span className="badge">Demo data</span> : null}

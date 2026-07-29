@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { DataModeBadge } from "@/components/DataModeBadge";
 import { EmptyState } from "@/components/EmptyState";
+import { PageHeader } from "@/components/PageHeader";
 import { PoweredByPerfect } from "@/components/PoweredByPerfect";
 import { getAccessToken } from "@/lib/auth/authClient";
 import {
@@ -31,8 +32,8 @@ const CATEGORY_FILTERS: { id: CatalogCategory | "all"; label: string }[] = [
 
 function bandFor(matchScore: number): { label: string; cls: string } {
   if (matchScore >= 75) return { label: "Strong match", cls: "bg-emerald-50 text-emerald-700 ring-emerald-200" };
-  if (matchScore >= 55) return { label: "Good match", cls: "bg-sky-50 text-sky-700 ring-sky-200" };
-  return { label: "Maybe", cls: "bg-slate-50 text-slate-600 ring-slate-200" };
+  if (matchScore >= 55) return { label: "Good match", cls: "bg-sf-plum-soft text-sf-plum ring-sf-lilac/50" };
+  return { label: "Maybe", cls: "bg-sf-champagne-soft text-sf-ink ring-sf-champagne/40" };
 }
 
 export default function RecommendationsPage() {
@@ -124,22 +125,21 @@ export default function RecommendationsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="badge">Shopping</span>
-            <PoweredByPerfect apis={scan?.facialToneData ? ["skin-analysis", "facial-tone"] : "skin-analysis"} />
-          </div>
-          <h1 className="mt-3 text-3xl font-semibold">Personalized for You</h1>
-          <p className="mt-2 max-w-2xl text-sm text-sf-muted">
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="Shopping"
+        title={<>Personalized <span className="italic">for you</span></>}
+        intro={
+          <>
             Ranked from a curated catalog using your latest scan&apos;s top concerns
             {scan?.facialToneData ? `, your ${scan.facialToneData.undertone} undertone,` : ""} and your skin profile. Each
             card explains <span className="font-medium text-sf-ink">why it matches you</span>.
-          </p>
-        </div>
+          </>
+        }
+      >
+        <PoweredByPerfect apis={scan?.facialToneData ? ["skin-analysis", "facial-tone"] : "skin-analysis"} />
         <DataModeBadge />
-      </div>
+      </PageHeader>
 
       {!scan ? (
         <EmptyState
@@ -185,7 +185,7 @@ export default function RecommendationsPage() {
             </p>
           </section>
 
-          <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <section data-reveal className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {recs.map((r) => {
               const band = bandFor(r.matchScore);
               const onShelfNow = isOnShelf(r.product);
@@ -231,7 +231,7 @@ export default function RecommendationsPage() {
                     {r.product.highlights.slice(0, 3).map((h) => (
                       <span
                         key={h}
-                        className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-sf-ink ring-1 ring-[#dbe4f4]"
+                        className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-sf-ink ring-1 ring-sf-line"
                       >
                         {h}
                       </span>

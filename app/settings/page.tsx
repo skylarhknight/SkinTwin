@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Disclaimer } from "@/components/Disclaimer";
 import { DemoSeedButton } from "@/components/DemoSeedButton";
+import { PageHeader } from "@/components/PageHeader";
 import { getAccessToken, getCurrentUser, signOut, type SkinTwinUser } from "@/lib/auth/authClient";
 import { LS_KEYS } from "@/lib/storage/localStorageKeys";
 
@@ -55,10 +56,10 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-3xl font-semibold">Settings</h1>
+    <div className="mx-auto max-w-2xl space-y-8">
+      <PageHeader eyebrow="Account" title="Settings" intro="Manage your session, demo data, and what stays on this device." />
 
-      <section className="card">
+      <section data-reveal className="card">
         <p className="font-medium">Account</p>
         {user ? (
           <div className="mt-2 space-y-3 text-sm text-sf-muted">
