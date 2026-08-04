@@ -8,29 +8,58 @@ import { getAccessToken, authHeaders } from "@/lib/auth/authClient";
 import { LS_KEYS } from "@/lib/storage/localStorageKeys";
 import type { RoutineResponse } from "@/lib/types";
 
-type Status = "loading" | "ready" | "empty" | "error";
+type Status = "loading" | "ready" | "error";
 
 export default function RoutinePage() {
   const [routine, setRoutine] = useState<RoutineResponse | null>(null);
   const [status, setStatus] = useState<Status>("loading");
 
   useEffect(() => {
-    getAccessToken()
-      .then((token) => {
-        return fetch("/api/routines/generate", { method: "POST", headers: authHeaders(token) });
-      })
-      .then((r) => r.json())
-      .then((generated) => {
-        const next = generated as RoutineResponse;
-        if (!next?.routines?.length) {
-          setStatus("empty");
-          return;
-        }
+    let cancelled = false;
+
+    /** Cached copy from a previous visit, so a failed regeneration still shows the last routine. */
+    function readCache(): RoutineResponse | null {
+      try {
+        const raw = localStorage.getItem(LS_KEYS.routines);
+        const parsed = raw ? (JSON.parse(raw) as RoutineResponse) : null;
+        return parsed?.routines?.length ? parsed : null;
+      } catch {
+        return null;
+      }
+    }
+
+    async function load() {
+      const token = await getAccessToken();
+      const res = await fetch("/api/routines/generate", { method: "POST", headers: authHeaders(token) });
+      const body = (await res.json()) as RoutineResponse & { error?: string };
+      // A non-2xx body is an error payload, not an empty routine — surfacing it as "no routine yet"
+      // hid auth and server failures behind an empty state.
+      if (!res.ok || body?.error) throw new Error(body?.error ?? `Request failed (${res.status})`);
+      if (!body?.routines?.length) throw new Error("Empty routine payload");
+      return body;
+    }
+
+    load()
+      .then((next) => {
+        if (cancelled) return;
         setRoutine(next);
         setStatus("ready");
         localStorage.setItem(LS_KEYS.routines, JSON.stringify(next));
       })
-      .catch(() => setStatus("error"));
+      .catch(() => {
+        if (cancelled) return;
+        const cached = readCache();
+        if (cached) {
+          setRoutine(cached);
+          setStatus("ready");
+          return;
+        }
+        setStatus("error");
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (status === "loading") {
@@ -70,7 +99,7 @@ export default function RoutinePage() {
     );
   }
 
-  if (status === "empty" || !routine) {
+  if (!routine) {
     return (
       <EmptyState
         title="No routine yet"

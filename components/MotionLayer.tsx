@@ -16,15 +16,25 @@ export function MotionLayer() {
       // Reveal everything now, and anything mounted later (async content), immediately.
       document.querySelectorAll<HTMLElement>("[data-reveal]").forEach(reveal);
       const mo = new MutationObserver((records) => {
-        records.forEach((rec) =>
+        records.forEach((rec) => {
+          if (rec.type === "attributes") {
+            const target = rec.target;
+            if (target instanceof HTMLElement && target.matches("[data-reveal]")) reveal(target);
+            return;
+          }
           rec.addedNodes.forEach((n) => {
             if (!(n instanceof HTMLElement)) return;
             if (n.matches("[data-reveal]")) reveal(n);
             n.querySelectorAll<HTMLElement>("[data-reveal]").forEach(reveal);
-          })
-        );
+          });
+        });
       });
-      mo.observe(document.body, { childList: true, subtree: true });
+      mo.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["data-reveal"],
+      });
       return () => mo.disconnect();
     }
 
@@ -61,17 +71,30 @@ export function MotionLayer() {
 
     document.querySelectorAll<HTMLElement>("[data-reveal]").forEach(register);
 
-    // Catch data-reveal content that renders after data loads.
+    // Catch data-reveal content that renders after data loads. Attribute records matter as much
+    // as childList ones: when a loading skeleton and its loaded replacement share an element type
+    // and position, React reuses the DOM node and only sets data-reveal on it, so no node is ever
+    // "added" and the content would otherwise stay stuck at opacity:0.
     const mutations = new MutationObserver((records) => {
-      records.forEach((rec) =>
+      records.forEach((rec) => {
+        if (rec.type === "attributes") {
+          const target = rec.target;
+          if (target instanceof HTMLElement && target.matches("[data-reveal]")) register(target);
+          return;
+        }
         rec.addedNodes.forEach((n) => {
           if (!(n instanceof HTMLElement)) return;
           if (n.matches("[data-reveal]")) register(n);
           n.querySelectorAll<HTMLElement>("[data-reveal]").forEach(register);
-        })
-      );
+        });
+      });
     });
-    mutations.observe(document.body, { childList: true, subtree: true });
+    mutations.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-reveal"],
+    });
 
     let frame = 0;
     const updateScroll = () => {
