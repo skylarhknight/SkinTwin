@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { MotionLayer } from "@/components/MotionLayer";
 import { AuroraCanvas } from "@/components/AuroraCanvas";
 import { FluidCanvas } from "@/components/FluidCanvas";
-import { PearlCanvas } from "@/components/PearlCanvas";
+import { SiteFooter } from "@/components/SiteFooter";
 import { getCurrentUser, type SkinTwinUser } from "@/lib/auth/authClient";
 
 const VIDEO_URL =
@@ -14,6 +14,7 @@ const VIDEO_URL =
 const NAV_LINKS: [string, string][] = [
   ["Dashboard", "/dashboard"],
   ["Scan", "/scan"],
+  ["Progress", "/progress"],
   ["Trends", "/trends"],
   ["Routine", "/routine"],
   ["Future", "/future"],
@@ -111,7 +112,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      <HomeFooter />
+      {/* The pearl serum footer is shared with every other route. */}
+      <SiteFooter />
     </div>
   );
 }
@@ -289,36 +291,6 @@ function VideoScrubHero({ ctaHref, ctaLabel, authed }: { ctaHref: string; ctaLab
         </div>
       </div>
     </section>
-  );
-}
-
-/* ------------------------------------------------------------ Footer --- */
-function HomeFooter() {
-  return (
-    <footer className="relative overflow-hidden border-t border-white/60">
-      <PearlCanvas className="absolute inset-0" intensity={1.15} />
-      {/* faint scrim only under the text column for legibility — keeps the pearl visible */}
-      <div className="absolute inset-0 bg-gradient-to-t from-white/25 to-transparent" aria-hidden />
-      <div className="relative mx-auto flex max-w-6xl flex-col gap-8 px-5 py-14 md:flex-row md:items-end md:justify-between md:px-8">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <LogoMark light={false} />
-            <span className="font-display text-lg font-medium tracking-tight">SkinTwin<span className="text-sf-rose">.</span></span>
-          </div>
-          <p className="mt-4 max-w-xs text-sm leading-6 text-sf-muted">
-            AI skincare tracking, habit insights, and future-aging simulation. Private by design · Never medical advice.
-          </p>
-        </div>
-        <nav className="flex flex-wrap gap-x-8 gap-y-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-sf-muted">
-          {NAV_LINKS.map(([label, href]) => (
-            <Link key={href} href={href} className="transition-colors hover:text-sf-ink">{label}</Link>
-          ))}
-        </nav>
-      </div>
-      <p className="relative border-t border-white/50 px-5 py-5 text-center text-[10px] uppercase tracking-[0.24em] text-sf-muted md:px-8">
-        © {new Date().getFullYear()} SkinTwin — Soft intelligence for your skin
-      </p>
-    </footer>
   );
 }
 

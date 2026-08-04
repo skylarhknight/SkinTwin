@@ -1,6 +1,6 @@
 import { calculateOverallScore, getTopConcerns, neutralBaselineMetrics } from "@/lib/skin/skinScore";
 import { unwrapPerfectSkinRaw } from "@/lib/perfect/scanRawEnvelope";
-import type { FacialToneData, SkinMetrics } from "@/lib/types";
+import type { FacialToneData, SkinMaskAsset, SkinMetrics } from "@/lib/types";
 
 const METRIC_FALLBACK = neutralBaselineMetrics();
 
@@ -72,6 +72,10 @@ export type ScanApiResponse = {
   summary: string;
   isMock: boolean;
   analyzedMetricKeys?: (keyof SkinMetrics)[];
+  maskAssets?: SkinMaskAsset[];
+  maskBaseUrl?: string;
+  skinAge?: number;
+  analysisTier?: "hd" | "sd";
   facialToneData?: FacialToneData;
   rawSkinAnalysisResponse?: unknown;
   rawColorToneResponse?: unknown;
@@ -91,7 +95,8 @@ function toFacialToneData(raw: unknown): FacialToneData | undefined {
  * Maps a skin_scans DB row to the API payload shape used by POST /api/scans and client flows.
  */
 export function dbSkinScanToScanResponse(row: SkinScansRow): ScanApiResponse {
-  const { analyzedMetricKeys } = unwrapPerfectSkinRaw(row.raw_skin_analysis_response);
+  const { analyzedMetricKeys, maskAssets, maskBaseUrl, skinAge, analysisTier } =
+    unwrapPerfectSkinRaw(row.raw_skin_analysis_response);
 
   const metrics: SkinMetrics = {
     hydration: num(row.hydration_score, METRIC_FALLBACK.hydration),
@@ -128,6 +133,10 @@ export function dbSkinScanToScanResponse(row: SkinScansRow): ScanApiResponse {
     summary: buildSummary(topConcerns),
     isMock: Boolean(row.is_mock),
     ...(analyzedMetricKeys?.length ? { analyzedMetricKeys } : {}),
+    ...(maskAssets?.length ? { maskAssets } : {}),
+    ...(maskBaseUrl ? { maskBaseUrl } : {}),
+    ...(skinAge !== undefined ? { skinAge } : {}),
+    ...(analysisTier ? { analysisTier } : {}),
     facialToneData: toFacialToneData(row.facial_tone_data),
     rawSkinAnalysisResponse: row.raw_skin_analysis_response,
     rawColorToneResponse: row.raw_color_tone_response,

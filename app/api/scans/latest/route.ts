@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { demoScan } from "@/lib/apiDemo";
 import { getRequestUserId } from "@/lib/auth/serverAuth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { dbSkinScanToScanResponse, type SkinScansRow } from "@/lib/supabase/scanMapper";
@@ -25,5 +26,7 @@ export async function GET(request: Request) {
       console.warn("[GET /api/scans/latest] unexpected error:", e);
     }
   }
+  /** No database means no scan history, so serve the demo scan instead of an empty dashboard. */
+  if (!supabase) return NextResponse.json(demoScan());
   return NextResponse.json(null);
 }

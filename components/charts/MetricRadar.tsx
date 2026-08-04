@@ -16,8 +16,25 @@ const labels: Record<keyof SkinMetrics, string> = {
   oiliness: "Oil Balance"
 };
 
-export function MetricRadar({ metrics }: { metrics: SkinMetrics }) {
-  const data = Object.entries(metrics).map(([key, value]) => ({ metric: labels[key as keyof SkinMetrics], value }));
+/**
+ * `analyzedKeys` restricts the chart to dimensions Perfect actually measured. Plotting an
+ * unmeasured metric would draw a placeholder as if it were a reading.
+ */
+export function MetricRadar({
+  metrics,
+  analyzedKeys,
+}: {
+  metrics: SkinMetrics;
+  analyzedKeys?: (keyof SkinMetrics)[];
+}) {
+  const keys = analyzedKeys?.length
+    ? (Object.keys(metrics) as (keyof SkinMetrics)[]).filter((k) => analyzedKeys.includes(k))
+    : (Object.keys(metrics) as (keyof SkinMetrics)[]);
+  const data = keys.map((key) => ({ metric: labels[key], value: metrics[key] }));
+
+  // A radar needs at least three axes to read as a shape rather than a line.
+  if (data.length < 3) return null;
+
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer>

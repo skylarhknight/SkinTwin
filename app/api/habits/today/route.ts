@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { demoHabits } from "@/lib/apiDemo";
 import { getRequestUserId } from "@/lib/auth/serverAuth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -6,8 +7,20 @@ export async function GET(request: Request) {
   const userId = await getRequestUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = getSupabaseAdminClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 500 });
   const today = new Date().toISOString().slice(0, 10);
+  /** Live responses are raw DB rows, so the demo row keeps the same snake_case shape. */
+  if (!supabase) {
+    const h = demoHabits[0];
+    return NextResponse.json({
+      log_date: today,
+      water_intake_ml: h.waterIntakeMl,
+      sleep_hours: h.sleepHours,
+      used_spf: h.usedSpf,
+      stress_level: h.stressLevel,
+      exercise_minutes: h.exerciseMinutes ?? null,
+      notes: h.notes ?? null,
+    });
+  }
   const { data, error } = await supabase
     .from("daily_habits")
     .select("*")

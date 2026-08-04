@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { demoDashboardPayload } from "@/lib/apiDemo";
 import { getRequestUserId } from "@/lib/auth/serverAuth";
 import { generateInsights } from "@/lib/insights/insightEngine";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -61,7 +62,7 @@ export async function GET(request: Request) {
   const userId = await getRequestUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = getSupabaseAdminClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 500 });
+  if (!supabase) return NextResponse.json(demoDashboardPayload());
 
   const [{ data: scans }, { data: habitsRaw }, { data: products }, { data: profile }, { data: am }, { data: pm }] =
     await Promise.all([

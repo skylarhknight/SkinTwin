@@ -119,10 +119,16 @@ export function FluidCanvas({
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const fallbackRef = useRef<HTMLDivElement | null>(null);
+  const loseTimerRef = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // A teardown that is immediately followed by a re-run on the same <canvas>
+    // (StrictMode, Fast Refresh) must not drop the GPU context — cancel the pending
+    // loseContext() scheduled by the previous cleanup before we ask for the context.
+    window.clearTimeout(loseTimerRef.current);
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const gl = (canvas.getContext("webgl", { antialias: false, alpha: false, premultipliedAlpha: false }) ||
@@ -265,8 +271,11 @@ export function FluidCanvas({
         window.removeEventListener("pointermove", onMove);
         canvas.removeEventListener("pointerleave", onLeave);
       }
+      // Deferred: getContext() on a canvas whose context was lost returns that same dead
+      // context, so losing it synchronously would leave a remount rendering nothing.
+      // A real unmount has no follow-up setup to cancel this, so the context still frees.
       const ext = gl.getExtension("WEBGL_lose_context");
-      ext?.loseContext();
+      loseTimerRef.current = window.setTimeout(() => ext?.loseContext(), 0);
     };
   }, [palette, intensity, interactive]);
 

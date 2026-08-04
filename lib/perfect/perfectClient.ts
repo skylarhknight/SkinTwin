@@ -1,4 +1,10 @@
-import type { FacialToneData, SimulationResponse, SimulationScenario, SkinMetrics } from "../types";
+import type {
+  FacialToneData,
+  SimulationResponse,
+  SimulationScenario,
+  SkinMaskAsset,
+  SkinMetrics,
+} from "../types";
 import { mockSkinMetrics } from "../mock/mockSkinData";
 import { dataUrlToArrayBuffer } from "./dataUrl";
 import { PerfectSkinAnalysisRejectedError } from "./perfectSkinErrors";
@@ -23,6 +29,14 @@ export type PerfectSkinAnalysisResult = {
   isMock: boolean;
   /** Present after a real Perfect run: which metrics came from API rows (others stay neutral baseline). */
   analyzedMetricKeys?: (keyof SkinMetrics)[];
+  /** Per-concern mask overlays from Perfect (`enable_mask_overlay`). */
+  maskAssets?: SkinMaskAsset[];
+  /** Perfect's resized/aligned photo — the layer the masks line up with. */
+  maskBaseUrl?: string;
+  /** Perfect's estimated skin age. */
+  skinAge?: number;
+  /** Which action tier actually ran. */
+  analysisTier?: "hd" | "sd";
 };
 
 export type PerfectFacialToneResult = {
@@ -37,12 +51,13 @@ type AgingInput = PerfectImageInput & {
   simulationYears?: number;
 };
 
-function hasPerfectConfig(endpointEnvName?: string): boolean {
-  return Boolean(
-    process.env.PERFECT_API_KEY &&
-      process.env.PERFECT_API_BASE_URL &&
-      (!endpointEnvName || process.env[endpointEnvName])
-  );
+/**
+ * Credentials are all that gate a live call. Endpoint paths are deliberately NOT required: each
+ * pipeline defaults to the documented S2S path and reads its env var only as an override, so
+ * requiring the var here silently forced every scan down the mock path.
+ */
+function hasPerfectCredentials(): boolean {
+  return Boolean(process.env.PERFECT_API_KEY && process.env.PERFECT_API_BASE_URL);
 }
 
 async function postToPerfect(endpoint: string, body: unknown): Promise<unknown> {
@@ -82,7 +97,7 @@ function buildAgingSimulationRequest(input: AgingInput): Record<string, unknown>
 }
 
 export async function analyzeSkin(input: PerfectImageInput): Promise<PerfectSkinAnalysisResult> {
-  if (!hasPerfectConfig("PERFECT_SKIN_ANALYSIS_ENDPOINT")) {
+  if (!hasPerfectCredentials()) {
     return {
       metrics: mockSkinMetrics,
       raw: { provider: "mock", metrics: mockSkinMetrics },
@@ -93,12 +108,22 @@ export async function analyzeSkin(input: PerfectImageInput): Promise<PerfectSkin
   const buf = input.imageBuffer;
   if (buf instanceof ArrayBuffer && buf.byteLength > 0) {
     try {
-      const { metrics, raw, analyzedMetricKeys } = await runPerfectSkinAnalysisPipeline(
-        buf,
-        input.filename ?? "scan.jpg",
-        input.contentType ?? "image/jpeg"
-      );
-      return { metrics, raw, isMock: false, analyzedMetricKeys };
+      const { metrics, raw, analyzedMetricKeys, maskAssets, maskBaseUrl, skinAge, tier } =
+        await runPerfectSkinAnalysisPipeline(
+          buf,
+          input.filename ?? "scan.jpg",
+          input.contentType ?? "image/jpeg"
+        );
+      return {
+        metrics,
+        raw,
+        isMock: false,
+        analyzedMetricKeys,
+        maskAssets,
+        maskBaseUrl,
+        skinAge,
+        analysisTier: tier,
+      };
     } catch (e) {
       if (e instanceof PerfectSkinAnalysisRejectedError) throw e;
       console.warn("[analyzeSkin] Perfect skin pipeline failed:", e);
@@ -120,7 +145,9 @@ export async function analyzeFacialTone(input: PerfectImageInput): Promise<Perfe
     isMock: true,
   });
 
-  if (!hasPerfectConfig("PERFECT_FACIAL_TONE_ENDPOINT")) return mockTone();
+  // Unlike skin analysis, the tone pipeline has no documented default path — without the env var
+  // there is nothing to call, so stay on the mock tone rather than throwing.
+  if (!hasPerfectCredentials() || !process.env.PERFECT_FACIAL_TONE_ENDPOINT) return mockTone();
 
   try {
     const buf = input.imageBuffer;
@@ -265,7 +292,8 @@ export async function simulateAging(input: AgingInput): Promise<SimulationRespon
     );
   }
 
-  if (hasPerfectConfig("PERFECT_AGING_SIMULATION_ENDPOINT")) {
+  // Legacy one-shot aging endpoint has no documented default path, so it stays opt-in via env var.
+  if (hasPerfectCredentials() && process.env.PERFECT_AGING_SIMULATION_ENDPOINT) {
     try {
       const endpoint = process.env.PERFECT_AGING_SIMULATION_ENDPOINT as string;
       const raw = (await postToPerfect(endpoint, buildAgingSimulationRequest(input))) as Record<string, unknown>;

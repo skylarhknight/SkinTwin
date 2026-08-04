@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Disclaimer } from "@/components/Disclaimer";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
-import { getAccessToken } from "@/lib/auth/authClient";
+import { getAccessToken, authHeaders } from "@/lib/auth/authClient";
 import { LS_KEYS } from "@/lib/storage/localStorageKeys";
 import type { RoutineResponse } from "@/lib/types";
 
@@ -17,8 +17,7 @@ export default function RoutinePage() {
   useEffect(() => {
     getAccessToken()
       .then((token) => {
-        if (!token) throw new Error("missing token");
-        return fetch("/api/routines/generate", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+        return fetch("/api/routines/generate", { method: "POST", headers: authHeaders(token) });
       })
       .then((r) => r.json())
       .then((generated) => {

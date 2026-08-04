@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { demoRoutine } from "@/lib/apiDemo";
 import { getRequestUser } from "@/lib/auth/serverAuth";
 import { generateRoutine } from "@/lib/recommendations/routineEngine";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -49,7 +50,8 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = user.id;
   const supabase = getSupabaseAdminClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 500 });
+  /** Generation is pure; only the save step needs a database, so demo mode returns the routine unsaved. */
+  if (!supabase) return NextResponse.json(demoRoutine());
   const ensured = await ensureAppUser(supabase, user);
   if (!ensured) return NextResponse.json({ error: "Could not prepare user record." }, { status: 500 });
 

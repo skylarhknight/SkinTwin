@@ -64,6 +64,16 @@ export async function signOut(): Promise<void> {
   }
 }
 
+/**
+ * Authorization header for API calls, omitted when there is no session. Server
+ * routes serve demo data when Supabase is unconfigured (CONTRACT §7), and in
+ * that state there is no token to send — so a missing token must not stop the
+ * request from being made.
+ */
+export function authHeaders(token: string | null): HeadersInit {
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export async function getAccessToken(): Promise<string | null> {
   const supabase = getSupabaseBrowserClient();
   if (!supabase) return null;

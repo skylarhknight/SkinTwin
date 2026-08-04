@@ -9,7 +9,7 @@ import { PoweredByPerfect } from "@/components/PoweredByPerfect";
 import { SkinCardDownload } from "@/components/SkinCardDownload";
 import { LS_KEYS } from "@/lib/storage/localStorageKeys";
 import type { SimulationResponse } from "@/lib/types";
-import { getAccessToken, getCurrentUser, type SkinTwinUser } from "@/lib/auth/authClient";
+import { getAccessToken, getCurrentUser, type SkinTwinUser, authHeaders } from "@/lib/auth/authClient";
 import type { DailyHabit, Insight, SkinScan } from "@/lib/types";
 
 type DashboardPayload = {
@@ -101,8 +101,7 @@ export default function DashboardPage() {
     }
     getAccessToken()
       .then((token) => {
-        if (!token) throw new Error("missing token");
-        return fetch("/api/dashboard", { headers: { Authorization: `Bearer ${token}` } });
+        return fetch("/api/dashboard", { headers: authHeaders(token) });
       })
       .then((r) => r.json())
       .then((payload) => setData(payload as DashboardPayload))

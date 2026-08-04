@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getRequestUser } from "@/lib/auth/serverAuth";
 import { calculateOverallScore, getTopConcerns } from "@/lib/skin/skinScore";
+import { DEMO_MODE_NOTE } from "@/lib/apiDemo";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { ensureAppUser } from "@/lib/supabase/ensureAppUser";
 import type { SkinMetrics } from "@/lib/types";
@@ -93,7 +94,13 @@ export async function POST(request: Request) {
   const userId = user.id;
 
   const supabase = getSupabaseAdminClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 500 });
+  /**
+   * Without a database there is nothing to seed into, but every read route already
+   * serves demo data, so report success rather than blocking the demo flow.
+   */
+  if (!supabase) {
+    return NextResponse.json({ status: "seeded", scans: 0, habits: 0, isMock: true, mockFallbackNote: DEMO_MODE_NOTE });
+  }
 
   const ensured = await ensureAppUser(supabase, user);
   if (!ensured) return NextResponse.json({ error: "Could not prepare user record." }, { status: 500 });
@@ -177,7 +184,7 @@ export async function DELETE(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = user.id;
   const supabase = getSupabaseAdminClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 500 });
+  if (!supabase) return NextResponse.json({ status: "cleared", isMock: true, mockFallbackNote: DEMO_MODE_NOTE });
   await supabase.from("skin_scans").delete().eq("user_id", userId).eq("is_mock", true);
   await supabase.from("daily_habits").delete().eq("user_id", userId);
   await supabase.from("products").delete().eq("user_id", userId);

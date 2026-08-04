@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { DEMO_MODE_NOTE, demoHabits } from "@/lib/apiDemo";
 import { getRequestUser } from "@/lib/auth/serverAuth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { ensureAppUser } from "@/lib/supabase/ensureAppUser";
@@ -21,7 +22,7 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = user.id;
   const supabase = getSupabaseAdminClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 500 });
+  if (!supabase) return NextResponse.json({ habits: demoHabits, isMock: true, mockFallbackNote: DEMO_MODE_NOTE });
   const { data, error } = await supabase
     .from("daily_habits")
     .select("*")
@@ -36,11 +37,19 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = user.id;
   const supabase = getSupabaseAdminClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 500 });
-  const ensured = await ensureAppUser(supabase, user);
-  if (!ensured) return NextResponse.json({ error: "Could not prepare user record." }, { status: 500 });
   const habit = (await request.json().catch(() => ({}))) as Partial<DailyHabit>;
   if (!habit.logDate) return NextResponse.json({ error: "logDate is required" }, { status: 400 });
+  /** Demo mode has nowhere to persist to; echo the entry back so the UI still advances. */
+  if (!supabase) {
+    return NextResponse.json({
+      habit: { ...demoHabits[0], ...habit } as DailyHabit,
+      status: "saved",
+      isMock: true,
+      mockFallbackNote: DEMO_MODE_NOTE,
+    });
+  }
+  const ensured = await ensureAppUser(supabase, user);
+  if (!ensured) return NextResponse.json({ error: "Could not prepare user record." }, { status: 500 });
   const payload = {
     user_id: userId,
     log_date: habit.logDate,

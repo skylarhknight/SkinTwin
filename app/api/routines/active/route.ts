@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { demoRoutine } from "@/lib/apiDemo";
 import { getRequestUserId } from "@/lib/auth/serverAuth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { RoutineResponse } from "@/lib/types";
@@ -7,7 +8,7 @@ export async function GET(request: Request) {
   const userId = await getRequestUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = getSupabaseAdminClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 500 });
+  if (!supabase) return NextResponse.json(demoRoutine());
 
   const { data: routines, error } = await supabase
     .from("routines")

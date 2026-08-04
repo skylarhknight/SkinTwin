@@ -7,7 +7,8 @@ import { ensureAppUser } from "@/lib/supabase/ensureAppUser";
 import { dbSkinScanToScanResponse, type SkinScansRow } from "@/lib/supabase/scanMapper";
 import { PerfectSkinAnalysisRejectedError } from "@/lib/perfect/perfectSkinErrors";
 import { wrapPerfectSkinRaw } from "@/lib/perfect/scanRawEnvelope";
-import type { SkinMetrics } from "@/lib/types";
+import { persistMaskAssets, persistMaskBaseImage } from "@/lib/supabase/persistMasks";
+import type { SkinMaskAsset, SkinMetrics } from "@/lib/types";
 
 const BUCKET = "skin-scans";
 
@@ -22,7 +23,11 @@ function buildLocalPayload(
   facialToneData: Awaited<ReturnType<typeof analyzeFacialTone>>["facialToneData"],
   rawSkin: unknown,
   rawTone: unknown,
-  analyzedMetricKeys?: (keyof SkinMetrics)[]
+  analyzedMetricKeys?: (keyof SkinMetrics)[],
+  maskAssets?: SkinMaskAsset[],
+  analysisTier?: "hd" | "sd",
+  maskBaseUrl?: string,
+  skinAge?: number
 ) {
   return {
     scanId,
@@ -36,6 +41,10 @@ function buildLocalPayload(
     summary: `${topConcerns.join(", ")} are the top areas to watch today.`,
     isMock,
     ...(analyzedMetricKeys?.length ? { analyzedMetricKeys } : {}),
+    ...(maskAssets?.length ? { maskAssets } : {}),
+    ...(analysisTier ? { analysisTier } : {}),
+    ...(maskBaseUrl ? { maskBaseUrl } : {}),
+    ...(skinAge !== undefined ? { skinAge } : {}),
     facialToneData,
     rawSkinAnalysisResponse: rawSkin,
     rawColorToneResponse: rawTone,
@@ -90,8 +99,16 @@ export async function POST(request: Request) {
     const topConcerns = getTopConcerns(skin.metrics, 3, analyzedKeys);
     const isMock = skin.isMock;
 
-    const storedSkinRaw =
-      !isMock && analyzedKeys?.length ? wrapPerfectSkinRaw(skin.raw, analyzedKeys) : skin.raw;
+    /** Rewritten below once masks are copied off Perfect's expiring presigned URLs. */
+    let maskAssets = skin.maskAssets ?? [];
+    let maskBaseUrl = skin.maskBaseUrl;
+    const analysisTier = skin.analysisTier;
+    const skinAge = skin.skinAge;
+
+    const buildStoredRaw = () =>
+      !isMock && analyzedKeys?.length
+        ? wrapPerfectSkinRaw(skin.raw, analyzedKeys, { maskAssets, maskBaseUrl, skinAge, analysisTier })
+        : skin.raw;
 
     const localFallback = () =>
       NextResponse.json(
@@ -104,9 +121,13 @@ export async function POST(request: Request) {
           topConcerns,
           isMock,
           tone.facialToneData,
-          storedSkinRaw,
+          buildStoredRaw(),
           tone.raw,
-          analyzedKeys
+          analyzedKeys,
+          maskAssets,
+          analysisTier,
+          maskBaseUrl,
+          skinAge
         )
       );
 
@@ -118,9 +139,10 @@ export async function POST(request: Request) {
     }
 
     let imageUrl = mockImageUrl;
+    const scanStamp = String(Date.now());
     try {
       const safeName = safeFilePart(file.name || "scan.jpg");
-      const storagePath = `${userId}/scans/${Date.now()}-${safeName}`;
+      const storagePath = `${userId}/scans/${scanStamp}-${safeName}`;
       const bytes = imageBuffer;
       const contentType = file.type || "image/jpeg";
       const { error: uploadError } = await supabase.storage.from(BUCKET).upload(storagePath, bytes, {
@@ -136,6 +158,15 @@ export async function POST(request: Request) {
     } catch (e) {
       console.warn("[POST /api/scans] Storage upload unexpected error:", e);
     }
+
+    if (maskAssets.length) {
+      maskAssets = await persistMaskAssets(supabase, BUCKET, userId, scanStamp, maskAssets);
+    }
+    if (maskBaseUrl) {
+      maskBaseUrl = await persistMaskBaseImage(supabase, BUCKET, userId, scanStamp, maskBaseUrl);
+    }
+
+    const storedSkinRaw = buildStoredRaw();
 
     try {
       const { data: inserted, error: insertError } = await supabase
@@ -176,6 +207,10 @@ export async function POST(request: Request) {
         rawSkinAnalysisResponse: storedSkinRaw,
         rawColorToneResponse: tone.raw,
         ...(analyzedKeys?.length ? { analyzedMetricKeys: analyzedKeys } : {}),
+        ...(maskAssets.length ? { maskAssets } : {}),
+        ...(analysisTier ? { analysisTier } : {}),
+        ...(maskBaseUrl ? { maskBaseUrl } : {}),
+        ...(skinAge !== undefined ? { skinAge } : {}),
       });
     } catch (e) {
       console.warn("[POST /api/scans] insert unexpected error:", e);

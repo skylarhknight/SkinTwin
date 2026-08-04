@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
-import { getAccessToken } from "@/lib/auth/authClient";
+import { getAccessToken, authHeaders } from "@/lib/auth/authClient";
 import { LS_KEYS } from "@/lib/storage/localStorageKeys";
 import type { DailyHabit } from "@/lib/types";
 
@@ -10,8 +10,7 @@ export default function HabitsPage() {
   useEffect(() => {
     getAccessToken()
       .then((token) => {
-        if (!token) throw new Error("missing token");
-        return fetch("/api/habits", { headers: { Authorization: `Bearer ${token}` } });
+        return fetch("/api/habits", { headers: authHeaders(token) });
       })
       .then((r) => r.json())
       .then((data) => {

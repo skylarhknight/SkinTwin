@@ -11,6 +11,18 @@ export type SkinMetrics = {
   oiliness: number;
 };
 
+/** A Perfect Corp mask-overlay image for one analyzed concern (from `enable_mask_overlay`). */
+export type SkinMaskAsset = {
+  /** SkinMetrics key this mask visualizes. */
+  metricKey: keyof SkinMetrics;
+  /** Raw Perfect `output[].type` this came from, e.g. "hd_wrinkle". */
+  perfectType: string;
+  /** Image URL — persisted to our own storage when available, else Perfect's presigned URL. */
+  url: string;
+  /** True when `url` is a short-lived Perfect presigned link that will expire. */
+  isEphemeral?: boolean;
+};
+
 export type FacialToneData = {
   undertone: "warm" | "cool" | "neutral" | "olive" | string;
   pigmentationIndex: number;
@@ -60,6 +72,14 @@ export type SkinScan = {
   isMock: boolean;
   /** Which dimensions Perfect returned for this scan (others may be neutral placeholders). */
   analyzedMetricKeys?: (keyof SkinMetrics)[];
+  /** Per-concern mask overlays returned by Perfect for this scan. */
+  maskAssets?: SkinMaskAsset[];
+  /** Perfect's resized/aligned photo — the layer mask overlays line up with. */
+  maskBaseUrl?: string;
+  /** Perfect's estimated skin age for this scan. */
+  skinAge?: number;
+  /** "hd" when the 10-concern HD action set ran, "sd" when we fell back. */
+  analysisTier?: "hd" | "sd";
   /** Set when real analysis failed and metrics are placeholders */
   mockFallbackNote?: string;
   facialToneData?: FacialToneData;

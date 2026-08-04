@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { AuthGate } from "@/components/AuthGate";
 import { Nav } from "@/components/Nav";
 import { MotionLayer } from "@/components/MotionLayer";
-import { AuroraCanvas } from "@/components/AuroraCanvas";
+import { SiteFooter } from "@/components/SiteFooter";
+import { PearlLiquidBackground } from "@/components/pearl";
 
 /** Routes that render full-bleed, without the SkinTwin nav / ambient / shell chrome. */
 const BARE_PREFIXES = ["/archive"];
@@ -22,11 +23,15 @@ export function AppChrome({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <AuroraCanvas className="fixed inset-0 -z-10 opacity-50" intensity={1.35} />
+      {/* Interior routes live inside the pearl liquid-glass environment. */}
+      <PearlLiquidBackground />
       <AuthGate>
         <MotionLayer />
-        <Nav />
-        <main className="page-shell mx-auto min-h-screen max-w-6xl px-4 py-8">{children}</main>
+        <div className="flex min-h-screen flex-col">
+          <Nav />
+          <main className="page-shell mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
+          <SiteFooter />
+        </div>
       </AuthGate>
     </>
   );

@@ -437,3 +437,54 @@ export function categoryGradient(category: CatalogCategory): string {
 export function categoryIcon(category: CatalogCategory): string {
   return CATEGORY_ICON[category] ?? "🧴";
 }
+
+/**
+ * Product photography lives in /public/products. Shot images cover a subset of the
+ * catalog exactly; everything else falls back to the category-representative shot so
+ * a card never renders an empty frame.
+ */
+const PRODUCT_IMAGE: Record<string, string> = {
+  "cera-hydrating-cleanser": "/products/facial-cleanser.webp",
+  "ordinary-niacinamide": "/products/niacinamide.webp",
+  "neutrogena-hydroboost": "/products/hydro-water-gel.webp",
+  "biossance-squalane-vit-c": "/products/rose-oil.webp",
+  "kiehls-eye-alpha-h": "/products/avocado-eye-cream.webp",
+  "kiehls-rare-earth-mask": "/products/earth-masque.webp",
+  "la-roche-anthelios": "/products/mineral-spf-50.webp",
+};
+
+const CATEGORY_IMAGE: Record<CatalogCategory, string> = {
+  cleanser: "/products/facial-cleanser.webp",
+  serum: "/products/peptide-firming-serum.webp",
+  moisturizer: "/products/barrier-repair-cream.webp",
+  sunscreen: "/products/mineral-spf-50.webp",
+  treatment: "/products/rose-oil.webp",
+  exfoliant: "/products/milky-hydration-toner.webp",
+  "eye-care": "/products/avocado-eye-cream.webp",
+  mask: "/products/overnight-recovery-mask.webp",
+};
+
+export function productImage(product: Pick<CatalogProduct, "id" | "category">): string {
+  return PRODUCT_IMAGE[product.id] ?? CATEGORY_IMAGE[product.category] ?? "/products/barrier-repair-cream.webp";
+}
+
+/**
+ * Shelf items are user-entered, so they carry a free-text category rather than a
+ * CatalogCategory. Match on the catalog first (exact name), then normalise the
+ * category string onto a known bucket.
+ */
+export function shelfImage(name: string, category: string): string {
+  const lowerName = name.trim().toLowerCase();
+  const match = PRODUCT_CATALOG.find((p) => p.name.toLowerCase() === lowerName);
+  if (match) return productImage(match);
+
+  const c = category.toLowerCase();
+  if (c.includes("cleanser") || c.includes("wash")) return CATEGORY_IMAGE.cleanser;
+  if (c.includes("sunscreen") || c.includes("spf") || c.includes("sun")) return CATEGORY_IMAGE.sunscreen;
+  if (c.includes("moistur") || c.includes("cream") || c.includes("lotion")) return CATEGORY_IMAGE.moisturizer;
+  if (c.includes("eye")) return CATEGORY_IMAGE["eye-care"];
+  if (c.includes("mask") || c.includes("masque")) return CATEGORY_IMAGE.mask;
+  if (c.includes("exfoli") || c.includes("toner") || c.includes("acid")) return CATEGORY_IMAGE.exfoliant;
+  if (c.includes("treatment") || c.includes("retin") || c.includes("oil")) return CATEGORY_IMAGE.treatment;
+  return CATEGORY_IMAGE.serum;
+}

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { DEMO_MODE_NOTE, demoProfile } from "@/lib/apiDemo";
 import { getRequestUser } from "@/lib/auth/serverAuth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { ensureAppUser } from "@/lib/supabase/ensureAppUser";
@@ -20,7 +21,8 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = user.id;
   const supabase = getSupabaseAdminClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 500 });
+  /** GET returns the bare profile object when live, so demo mode matches that shape. */
+  if (!supabase) return NextResponse.json(demoProfile);
   const { data, error } = await supabase.from("user_profiles").select("*").eq("user_id", userId).maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!data) return NextResponse.json(null);
@@ -32,10 +34,18 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = user.id;
   const supabase = getSupabaseAdminClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 500 });
+  const profile = (await request.json().catch(() => ({}))) as Partial<UserProfile>;
+  /** Demo mode has nowhere to persist to; echo the profile back so the UI still advances. */
+  if (!supabase) {
+    return NextResponse.json({
+      profile: { ...demoProfile, ...profile } as UserProfile,
+      status: "saved",
+      isMock: true,
+      mockFallbackNote: DEMO_MODE_NOTE,
+    });
+  }
   const ensured = await ensureAppUser(supabase, user);
   if (!ensured) return NextResponse.json({ error: "Could not prepare user record." }, { status: 500 });
-  const profile = (await request.json().catch(() => ({}))) as Partial<UserProfile>;
   const payload = {
     user_id: userId,
     skin_type: profile.skinType ?? "unsure",

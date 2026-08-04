@@ -8,6 +8,7 @@ import { getCurrentUser, signOut, type SkinTwinUser } from "@/lib/auth/authClien
 const primary = [
   ["Dashboard", "/dashboard"],
   ["Scan", "/scan"],
+  ["Progress", "/progress"],
   ["Trends", "/trends"],
   ["Routine", "/routine"],
   ["Future", "/future"],
@@ -17,6 +18,7 @@ const secondary = [["Products", "/products"], ["Insights", "/insights"], ["Setti
 const PROTECTED_PREFIXES = [
   "/dashboard",
   "/scan",
+  "/progress",
   "/trends",
   "/routine",
   "/future",

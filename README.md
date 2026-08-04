@@ -10,6 +10,8 @@ SkinTwin is a skincare wellness app that uses AI skin analysis, habit tracking, 
 - Onboarding for skin goals, sensitivity, budget, and products
 - AI-powered skin scan flow with mock fallback
 - SkinTwin score and top concerns
+- Per-concern mask overlays rendered directly from the Skin Analysis API
+- Scan-to-scan progress reports with habit and product attribution
 - Radar chart and trend charts
 - Habit tracking for sleep, water, SPF, and stress
 - Product shelf
@@ -28,13 +30,43 @@ SkinTwin is a skincare wellness app that uses AI skin analysis, habit tracking, 
 
 ## Perfect Corp APIs
 
-The app is designed to integrate:
+The app integrates:
 
-- AI Skin Analysis
-- AI Facial Color Tones Analyzer
-- AI Aging Simulation
+- **AI Skin Analysis** — file upload → presigned PUT → task → poll, per the S2S v2.1 flow
+- **AI Facial Color Tones Analyzer** — undertone plus pigmentation/redness indices
+- **AI Skin Simulation** — the four future-trajectory scenarios on `/future`
 
 If API credentials are missing, the app uses deterministic mock responses for demo reliability.
+
+### Analysis tiers
+
+Skin Analysis runs the **HD action set** by default, covering all ten dimensions the UI renders
+(`hd_moisture`, `hd_redness`, `hd_acne`, `hd_pore`, `hd_texture`, `hd_wrinkle`, `hd_dark_circle`,
+`hd_age_spot`, `hd_radiance`, `hd_oiliness`). If the account lacks HD entitlement, the pipeline
+retries once on the SD triad (`acne`, `wrinkle`, `age_spot`) using the same uploaded file, and the
+scan is labelled accordingly.
+
+Override with `PERFECT_DST_ACTIONS` (comma-separated). Never mix HD and SD actions in one task.
+
+**The UI only renders dimensions Perfect actually measured.** Unmeasured metrics are excluded from
+the radar, the metric grid, and every scan-to-scan comparison rather than shown at a placeholder
+value — a placeholder sitting next to real scores reads as a real reading.
+
+### Mask overlays
+
+Tasks are submitted with `miniserver_args.enable_mask_overlay`, and the per-concern overlay images
+are extracted from the poll response, copied into Supabase Storage (Perfect's URLs are presigned and
+expire), and rendered on the scan result page and in `/progress`.
+
+## Progress reports
+
+`/progress` compares two scans and explains the change using what was logged in between. It is
+deliberately conservative:
+
+- Only dimensions measured in **both** scans are compared; anything else is listed as not comparable.
+- Moves within ±3 points are reported as steady, since Perfect's scores carry lighting and framing noise.
+- Habit and product links are framed as timing overlaps, never as proven cause, and carry a
+  confidence grade based on window length and logging consistency.
 
 ## Setup
 

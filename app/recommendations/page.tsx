@@ -1,16 +1,17 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { DataModeBadge } from "@/components/DataModeBadge";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
 import { PoweredByPerfect } from "@/components/PoweredByPerfect";
-import { getAccessToken } from "@/lib/auth/authClient";
+import { getAccessToken, authHeaders } from "@/lib/auth/authClient";
 import {
   buildShopUrl,
   categoryGradient,
-  categoryIcon,
+  productImage,
   type CatalogCategory,
   type CatalogProduct,
 } from "@/lib/recommendations/productCatalog";
@@ -62,8 +63,7 @@ export default function RecommendationsPage() {
     }
     getAccessToken()
       .then((token) => {
-        if (!token) throw new Error("missing token");
-        return fetch("/api/products", { headers: { Authorization: `Bearer ${token}` } });
+        return fetch("/api/products", { headers: authHeaders(token) });
       })
       .then((r) => r.json())
       .then((data) => {
@@ -196,9 +196,13 @@ export default function RecommendationsPage() {
                       r.product.category
                     )}`}
                   >
-                    <span className="text-5xl" aria-hidden>
-                      {categoryIcon(r.product.category)}
-                    </span>
+                    <Image
+                      src={productImage(r.product)}
+                      alt={`${r.product.brand} ${r.product.name}`}
+                      fill
+                      sizes="(min-width: 1024px) 20rem, (min-width: 768px) 45vw, 90vw"
+                      className="object-cover"
+                    />
                     <span
                       className={`absolute right-3 top-3 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${band.cls}`}
                     >

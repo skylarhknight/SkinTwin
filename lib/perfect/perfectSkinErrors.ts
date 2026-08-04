@@ -17,5 +17,6 @@ export function rejectedTitleForCode(code: string | undefined): string {
   if (!code) return "Photo not accepted";
   if (code === "error_src_face_too_small") return "Face too small or resolution too low";
   if (code === "error_src_face_out_of_bound") return "Face not centered or cut off";
+  if (code === "error_below_min_image_size") return "Photo resolution too low";
   return "Photo not accepted";
 }

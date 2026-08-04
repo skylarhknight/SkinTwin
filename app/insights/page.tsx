@@ -5,7 +5,7 @@ import { DataModeBadge } from "@/components/DataModeBadge";
 import { Disclaimer } from "@/components/Disclaimer";
 import { PageHeader } from "@/components/PageHeader";
 import { PoweredByPerfect } from "@/components/PoweredByPerfect";
-import { getAccessToken } from "@/lib/auth/authClient";
+import { getAccessToken, authHeaders } from "@/lib/auth/authClient";
 import type { Insight } from "@/lib/types";
 
 type Status = "loading" | "ready" | "error";
@@ -17,8 +17,7 @@ export default function InsightsPage() {
   useEffect(() => {
     getAccessToken()
       .then((token) => {
-        if (!token) throw new Error("missing token");
-        return fetch("/api/insights", { headers: { Authorization: `Bearer ${token}` } });
+        return fetch("/api/insights", { headers: authHeaders(token) });
       })
       .then((r) => r.json())
       .then((data) => {

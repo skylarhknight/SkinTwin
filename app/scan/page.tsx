@@ -32,6 +32,10 @@ function compactHistoryItem(scan: SkinScan): SkinScan {
     summary: scan.summary,
     isMock: scan.isMock,
     analyzedMetricKeys: scan.analyzedMetricKeys,
+    maskAssets: scan.maskAssets,
+    maskBaseUrl: scan.maskBaseUrl,
+    skinAge: scan.skinAge,
+    analysisTier: scan.analysisTier,
     mockFallbackNote: scan.mockFallbackNote,
     facialToneData: scan.facialToneData,
   };

@@ -112,10 +112,15 @@ export function PearlCanvas({
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const fallbackRef = useRef<HTMLDivElement | null>(null);
+  const loseTimerRef = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // See FluidCanvas: cancel the previous cleanup's deferred loseContext() so a
+    // teardown/re-run pair on the same <canvas> keeps its GPU context.
+    window.clearTimeout(loseTimerRef.current);
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const gl = (canvas.getContext("webgl", { antialias: false, alpha: false, premultipliedAlpha: false }) ||
@@ -252,7 +257,7 @@ export function PearlCanvas({
         canvas.removeEventListener("pointerleave", onLeave);
       }
       const ext = gl.getExtension("WEBGL_lose_context");
-      ext?.loseContext();
+      loseTimerRef.current = window.setTimeout(() => ext?.loseContext(), 0);
     };
   }, [intensity, interactive]);
 

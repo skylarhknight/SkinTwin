@@ -4,7 +4,8 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FluidCanvas } from "@/components/FluidCanvas";
-import { PearlCanvas } from "@/components/PearlCanvas";
+import { SiteFooter } from "@/components/SiteFooter";
+import { PearlLiquidBackground } from "@/components/pearl";
 import { signIn, signUp } from "@/lib/auth/authClient";
 
 export default function LoginPage() {
@@ -37,9 +38,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden">
-      {/* pearl liquid-glass background — interactive, grained, full-bleed */}
-      <PearlCanvas className="absolute inset-0" intensity={1.1} />
+    <div className="relative w-full">
+      {/* pearl liquid-glass environment, shared with every interior route */}
+      <PearlLiquidBackground />
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-5xl items-center px-5 py-10 md:px-8">
         <Link href="/" className="absolute left-5 top-6 flex items-center gap-2 md:left-8">
@@ -92,6 +93,7 @@ export default function LoginPage() {
       </section>
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }

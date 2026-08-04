@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { demoScan } from "@/lib/apiDemo";
 import { getRequestUserId } from "@/lib/auth/serverAuth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { dbSkinScanToScanResponse, type SkinScansRow } from "@/lib/supabase/scanMapper";
@@ -11,6 +12,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
   const id = params.id;
 
   const supabase = getSupabaseAdminClient();
+
+  /** Demo scans carry non-UUID ids, so serve the demo scan rather than rejecting the id. */
+  if (!supabase) return NextResponse.json({ ...demoScan(), id });
 
   if (supabase && UUID_RE.test(id)) {
     try {

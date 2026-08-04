@@ -45,10 +45,14 @@ export function MotionLayer() {
     // Anything already in view reveals immediately — observing an in-viewport node in the same
     // frame it mounts can yield an initial isIntersecting:false that never re-fires without a
     // scroll, leaving it stuck. Only below-fold nodes are deferred to the observer.
+    // The "already registered" guard must live with the observer, not on the DOM node:
+    // StrictMode (and any re-run of this effect) disconnects the old observer, and a flag
+    // persisted on the element would make every node skip re-registration and stay at opacity:0.
+    const bound = new WeakSet<HTMLElement>();
     let seq = 0;
     const register = (node: HTMLElement) => {
-      if (node.dataset.revealBound) return;
-      node.dataset.revealBound = "1";
+      if (bound.has(node)) return;
+      bound.add(node);
       node.style.setProperty("--reveal-delay", `${Math.min(seq % 4, 3) * 90}ms`);
       seq += 1;
       if (node.getBoundingClientRect().top < window.innerHeight * 0.95) reveal(node);

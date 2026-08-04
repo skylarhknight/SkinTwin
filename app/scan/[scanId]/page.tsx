@@ -8,22 +8,11 @@ import { Disclaimer } from "@/components/Disclaimer";
 import { EmptyState } from "@/components/EmptyState";
 import { PoweredByPerfect } from "@/components/PoweredByPerfect";
 import { SkinCardDownload } from "@/components/SkinCardDownload";
+import { SkinMaskViewer } from "@/components/SkinMaskViewer";
 import { getCurrentUser } from "@/lib/auth/authClient";
+import { METRIC_LABELS } from "@/lib/skin/metricLabels";
 import { LS_KEYS } from "@/lib/storage/localStorageKeys";
 import type { SkinMetrics, SkinScan } from "@/lib/types";
-
-const METRIC_LABELS: Record<keyof SkinMetrics, string> = {
-  hydration: "Hydration",
-  redness: "Redness",
-  acne: "Clarity",
-  pores: "Pores",
-  texture: "Texture",
-  wrinkles: "Fine lines",
-  darkCircles: "Dark circles",
-  pigmentation: "Tone",
-  radiance: "Radiance",
-  oiliness: "Oil balance",
-};
 
 const METRIC_HINTS: Record<keyof SkinMetrics, string> = {
   hydration: "Layer a humectant + occlusive PM.",
@@ -48,6 +37,7 @@ function bandColor(value: number): string {
 export default function ScanResultPage() {
   const router = useRouter();
   const [scan, setScan] = useState<SkinScan | null>(null);
+  const [baseImage, setBaseImage] = useState("");
   const [authChecked, setAuthChecked] = useState(false);
   useEffect(() => {
     getCurrentUser()
@@ -58,6 +48,7 @@ export default function ScanResultPage() {
         }
         const raw = localStorage.getItem(LS_KEYS.latestScan);
         if (raw) setScan(JSON.parse(raw));
+        setBaseImage(localStorage.getItem(LS_KEYS.latestImage) ?? "");
         setAuthChecked(true);
       })
       .catch(() => {
@@ -81,6 +72,16 @@ export default function ScanResultPage() {
     );
   }
 
+  /** Never render a dimension Perfect did not return — a placeholder next to real scores reads as real. */
+  const allKeys = Object.keys(scan.metrics) as (keyof SkinMetrics)[];
+  const shownKeys =
+    !scan.isMock && scan.analyzedMetricKeys?.length
+      ? allKeys.filter((k) => scan.analyzedMetricKeys!.includes(k))
+      : allKeys;
+  const masks = scan.maskAssets ?? [];
+  // Perfect renders masks against its own resized copy, so that image is the aligned base layer.
+  const maskBase = scan.maskBaseUrl || baseImage || scan.imageUrl;
+
   return (
     <div className="space-y-6">
       {scan.mockFallbackNote ? (
@@ -89,17 +90,18 @@ export default function ScanResultPage() {
         </div>
       ) : null}
 
-      {!scan.isMock &&
-      scan.analyzedMetricKeys &&
-      scan.analyzedMetricKeys.length > 0 &&
-      scan.analyzedMetricKeys.length < 10 ? (
+      {!scan.isMock && shownKeys.length > 0 ? (
         <p className="rounded-2xl border border-sf-blue-lighter/80 bg-sf-blue-pale px-4 py-3 text-sm text-sf-ink">
-          This run measured <span className="font-medium">{scan.analyzedMetricKeys.length}</span> dimension
-          {scan.analyzedMetricKeys.length === 1 ? "" : "s"} from Perfect. Any metric still at{" "}
-          <span className="font-medium">50</span> was not returned for this task—it is a neutral placeholder, not an
-          estimate of your skin. Add more analysis types via{" "}
-          <code className="rounded bg-sf-blue-soft px-1 text-xs font-medium">PERFECT_DST_ACTIONS</code> if your Perfect
-          plan supports them.
+          Measured <span className="font-medium">{shownKeys.length}</span> dimension
+          {shownKeys.length === 1 ? "" : "s"} on your photo
+          {scan.analysisTier === "sd" ? " using Perfect's standard action set" : ""}. Only measured dimensions
+          are shown — nothing here is estimated or filled in.
+          {scan.analysisTier === "sd" ? (
+            <>
+              {" "}
+              HD analysis covers all ten; it was unavailable for this account, so we ran the standard set instead.
+            </>
+          ) : null}
         </p>
       ) : null}
 
@@ -121,7 +123,7 @@ export default function ScanResultPage() {
       <div className="grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
         <section className="card">
           <h2 className="font-semibold text-sf-ink">Skin profile</h2>
-          <MetricRadar metrics={scan.metrics} />
+          <MetricRadar metrics={scan.metrics} analyzedKeys={shownKeys} />
           {scan.facialToneData ? (
             <div className="mt-4 rounded-2xl border border-sf-blue-lighter/70 bg-sf-blue-pale/50 p-4">
               <h3 className="text-sm font-semibold text-sf-ink">Facial tone</h3>
@@ -147,13 +149,12 @@ export default function ScanResultPage() {
             ))}
           </div>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            {Object.entries(scan.metrics).map(([k, v]) => {
-              const key = k as keyof SkinMetrics;
-              const value = Number(v);
+            {shownKeys.map((key) => {
+              const value = Number(scan.metrics[key]);
               return (
-                <div className="rounded-2xl border border-sf-blue-lighter/70 bg-sf-blue-pale/50 p-4" key={k}>
+                <div className="rounded-2xl border border-sf-blue-lighter/70 bg-sf-blue-pale/50 p-4" key={key}>
                   <div className="flex items-baseline justify-between gap-2">
-                    <p className="text-sm font-medium text-sf-muted">{METRIC_LABELS[key] ?? k}</p>
+                    <p className="text-sm font-medium text-sf-muted">{METRIC_LABELS[key] ?? key}</p>
                     <p className={`text-2xl font-semibold ${bandColor(value)}`}>{value}</p>
                   </div>
                   <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/70">
@@ -172,11 +173,22 @@ export default function ScanResultPage() {
         </section>
       </div>
 
+      {masks.length && maskBase ? (
+        <SkinMaskViewer
+          baseImageUrl={maskBase}
+          masks={masks}
+          metrics={scan.metrics}
+        />
+      ) : null}
+
       <Disclaimer />
 
       <div className="flex flex-wrap items-center gap-3">
         <Link className="btn-primary" href="/recommendations">
           Shop For Your Skin
+        </Link>
+        <Link className="btn-secondary" href="/progress">
+          See What Changed
         </Link>
         <Link className="btn-secondary" href="/routine">
           View Routine

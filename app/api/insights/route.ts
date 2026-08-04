@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { demoInsights } from "@/lib/apiDemo";
 import { getRequestUser } from "@/lib/auth/serverAuth";
 import { generateInsights } from "@/lib/insights/insightEngine";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -50,7 +51,7 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = user.id;
   const supabase = getSupabaseAdminClient();
-  if (!supabase) return NextResponse.json({ error: "Supabase is not configured" }, { status: 500 });
+  if (!supabase) return NextResponse.json({ insights: demoInsights() });
 
   const [{ data: scans }, { data: habits }, { data: products }, { data: profile }] = await Promise.all([
     supabase.from("skin_scans").select("*").eq("user_id", userId).order("scan_date", { ascending: true }),
